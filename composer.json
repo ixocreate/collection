@@ -1,0 +1,32 @@
+{
+    "name": "ixocreate/command-bus",
+    "description": "Command-Bus for IXOCREATE",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "IXOCREATE"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.1",
+        "ixocreate/collection-contract": "dev-develop",
+        "ixocreate/contract": "dev-develop",
+        "ixocreate/servicemanager-contract": "dev-develop"
+    },
+    "require-dev": {
+        "ixocreate/coding-standard": "^1.0",
+        "phpunit/phpunit": "^6.0.6",
+        "php-coveralls/php-coveralls": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ixocreate\\Collection\\": "src/"
+        }
+    },
+    "scripts": {
+        "fix-cs": "vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix --config vendor/ixocreate/coding-standard/.php_cs"
+    }
+}
