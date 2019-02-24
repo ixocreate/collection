@@ -1,6 +1,6 @@
 {
     "name": "ixocreate/command-bus",
-    "description": "Command-Bus for IXOCREATE",
+    "description": "Collection for IXOCREATE",
     "license": "MIT",
     "type": "library",
     "authors": [
