@@ -9,6 +9,6 @@ declare(strict_types=1);
 
 namespace Ixocreate\Collection\Exception;
 
-class EmptyException extends \LogicException
+class ItemNotFound extends \RuntimeException
 {
 }

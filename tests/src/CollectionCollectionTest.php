@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace IxocreateTest\Entity\Collection;
+namespace IxocreateTest\Collection;
 
 use Ixocreate\Collection\Collection;
 use Ixocreate\Collection\CollectionCollection;
@@ -53,32 +53,32 @@ class CollectionCollectionTest extends TestCase
         new Collection(['id' => 1]);
     }
 
-    public function testGetCollections()
-    {
-        $collections = new CollectionCollection($this->collections);
-        $this->assertSame($this->collections, $collections->getCollections());
-    }
-
-    public function testGetCollectionIterator()
-    {
-        $collections = new CollectionCollection($this->collections);
-
-        $this->assertInstanceOf(\ArrayIterator::class, $collections->getCollectionIterator());
-        $this->assertSame(\count($this->collections), $collections->getCollectionIterator()->count());
-    }
-
-    public function testGetCollectionCount()
-    {
-        $collections = new CollectionCollection($this->collections);
-
-        $this->assertSame(\count($this->collections), $collections->getCollectionCount());
-    }
-
     public function testAll()
     {
         $collections = new CollectionCollection($this->collections);
+        $this->assertSame($this->collections, $collections->all());
+    }
 
-        $this->assertSame([
+    public function testIterator()
+    {
+        $collections = new CollectionCollection($this->collections);
+
+        $this->assertInstanceOf(\Iterator::class, $collections->iterator());
+        $this->assertSame(\count($this->collections), $collections->iterator()->count());
+    }
+
+    public function testCount()
+    {
+        $collections = new CollectionCollection($this->collections);
+
+        $this->assertSame(\count($this->collections), $collections->count());
+    }
+
+    public function testCombinedAll()
+    {
+        $collections = new CollectionCollection($this->collections);
+
+        $this->assertEquals((new Collection([
             [
                 'id' => 1,
                 'name' => 'Eddard Stark',
@@ -99,7 +99,7 @@ class CollectionCollectionTest extends TestCase
                 'name' => 'Tyrion Lannister',
                 'age' => 24,
             ],
-        ], $collections->all());
+        ]))->all(), $collections->combinedAll());
     }
 
     public function testKeys()
@@ -140,13 +140,13 @@ class CollectionCollectionTest extends TestCase
     {
         $collections = new CollectionCollection($this->collections);
 
-        $this->assertInstanceOf(\MultipleIterator::class, $collections->getIterator());
-        $this->assertSame(\count($this->collections), $collections->getIterator()->countIterators());
+        $this->assertInstanceOf(\MultipleIterator::class, $collections->combinedIterator());
+        $this->assertSame(\count($this->collections), $collections->combinedIterator()->countIterators());
     }
 
-    public function testCount()
+    public function testCombinedCount()
     {
         $collections = new CollectionCollection($this->collections);
-        $this->assertSame(4, $collections->count());
+        $this->assertSame(4, $collections->combinedCount());
     }
 }

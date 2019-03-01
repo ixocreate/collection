@@ -11,7 +11,7 @@ namespace Ixocreate\Collection;
 
 use Traversable;
 
-final class Collection extends AbstractCollection
+final class ArrayCollection extends AbstractCollection
 {
     /**
      * @param callable|array|Traversable $items
@@ -19,10 +19,13 @@ final class Collection extends AbstractCollection
      */
     public function __construct($items = [], $indexBy = null)
     {
-        if ($indexBy !== null) {
-            $items = (new Collection($items))->indexBy($indexBy);
-        }
-
-        return parent::__construct($items);
+        return parent::__construct(
+            new Collection(
+                (function (array ...$item) {
+                    return $item;
+                })(...$items),
+                $indexBy
+            )
+        );
     }
 }

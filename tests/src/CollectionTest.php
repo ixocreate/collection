@@ -7,16 +7,91 @@
 
 declare(strict_types=1);
 
-namespace IxocreateTest\Entity\Collection;
+namespace IxocreateTest\Collection;
 
 use Ixocreate\Collection\Collection;
 use PHPUnit\Framework\TestCase;
 
 class CollectionTest extends TestCase
 {
-    public function testDataIntegrityInvalidDataException()
+    private function data()
     {
-        $this->expectException(\Throwable::class);
-        new Collection(['id' => 1]);
+        return require '../misc/data.php';
+    }
+
+    public function testCollectionAsInput()
+    {
+        $collection = new Collection($this->data());
+        $collection2 = new Collection($collection);
+
+        /**
+         * Using Collection as input for another Collection should not result in DuplicateKey exceptions.
+         * This makes sure it's properly wrapped internally.
+         */
+        $this->assertSame($collection->toArray(), $collection2->toArray());
+    }
+
+    public function testDuplicateKeysCheckGetsReset()
+    {
+        $expected = [['id' => 1, 'name' => 'One'], ['id' => 1, 'name' => 'Two']];
+
+        $collection = (new Collection($expected))
+            ->indexBy('id');
+
+        /**
+         * Each realizing call on the same collection would result in a DuplicateKeys exception after the first call
+         * if keysUsed[] was not reset internally on rewind().
+         */
+        $this->assertSame($expected, $collection->values()->toArray());
+        $this->assertSame($expected, $collection->values()->toArray());
+        $this->assertSame(2, $collection->values()->count());
+        $this->assertSame(2, $collection->values()->count());
+    }
+
+    public function testGeneratorCanBeRunMultipleTimes()
+    {
+        /**
+         * Call filter or any other method that adds a generator to the pipeline.
+         */
+        $collection = (new Collection($this->data()))
+            ->filter(function ($item) {
+                return $item['age'] < 8;
+            })
+            ->indexBy('id');
+
+        $expected = [
+            6 => [
+                'id' => 6,
+                'name' => 'Brandon Stark',
+                'age' => 7,
+            ],
+            15 => [
+                'id' => 15,
+                'name' => 'Brandon Stark Twin',
+                'age' => 7,
+            ],
+        ];
+
+        /**
+         * Each call on the same collection would result in an "Exception : Cannot rewind a generator that was already run"
+         * if a generator with valid() === false was not recreated on each rewind()
+         */
+        $this->assertSame(2, $collection->count());
+        $this->assertSame($expected, $collection->toArray());
+        $this->assertSame($expected, $collection->toArray());
+        $this->assertSame(2, $collection->count());
+        $this->assertSame($expected, $collection->toArray());
+    }
+
+    public function testJsonEncode()
+    {
+        $collection = new Collection($this->data());
+        $this->assertSame(\json_encode($this->data()), \json_encode($collection));
+    }
+
+    public function testToArray()
+    {
+        $collection = new Collection($this->data());
+        $this->assertSame($this->data(), $collection->toArray());
     }
 }
