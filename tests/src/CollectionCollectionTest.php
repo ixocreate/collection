@@ -47,24 +47,22 @@ class CollectionCollectionTest extends TestCase
         ]);
     }
 
-    public function testDataIntegrityInvalidDataException()
+    public function testDataType()
     {
         $this->expectException(\Throwable::class);
-        new Collection(['id' => 1]);
+        new CollectionCollection(['id' => 1]);
     }
 
-    public function testAll()
+    public function testToArray()
     {
         $collections = new CollectionCollection($this->collections);
-        $this->assertSame($this->collections, $collections->all());
+        $this->assertSame($this->collections, $collections->toArray());
     }
 
     public function testIterator()
     {
         $collections = new CollectionCollection($this->collections);
-
-        $this->assertInstanceOf(\Iterator::class, $collections->iterator());
-        $this->assertSame(\count($this->collections), $collections->iterator()->count());
+        $this->assertInstanceOf(\Iterator::class, $collections);
     }
 
     public function testCount()
@@ -74,57 +72,11 @@ class CollectionCollectionTest extends TestCase
         $this->assertSame(\count($this->collections), $collections->count());
     }
 
-    public function testCombinedAll()
-    {
-        $collections = new CollectionCollection($this->collections);
-
-        $this->assertEquals((new Collection([
-            [
-                'id' => 1,
-                'name' => 'Eddard Stark',
-                'age' => 34,
-            ],
-            [
-                'id' => 2,
-                'name' => 'Catelyn Stark',
-                'age' => 33,
-            ],
-            [
-                'id' => 3,
-                'name' => 'Daenerys Targaryen',
-                'age' => 13,
-            ],
-            [
-                'id' => 4,
-                'name' => 'Tyrion Lannister',
-                'age' => 24,
-            ],
-        ]))->all(), $collections->combinedAll());
-    }
-
     public function testKeys()
     {
         $collections = new CollectionCollection($this->collections);
 
-        $this->assertSame([0, 1], $collections->keys());
-    }
-
-    public function testEach()
-    {
-        $collections = new CollectionCollection($this->collections);
-
-        $i = 0;
-        $result = [];
-        $collections->each(function ($item) use (&$result, &$i) {
-            if ($i > 0) {
-                return false;
-            }
-            $result[] = $item;
-
-            $i++;
-        });
-
-        $this->assertSame([$this->collections[0]], $result);
+        $this->assertSame([0, 1], $collections->keys()->toArray());
     }
 
     public function testIsEmpty()
@@ -136,17 +88,9 @@ class CollectionCollectionTest extends TestCase
         $this->assertTrue($collections->isEmpty());
     }
 
-    public function testGetIterator()
-    {
-        $collections = new CollectionCollection($this->collections);
-
-        $this->assertInstanceOf(\MultipleIterator::class, $collections->combinedIterator());
-        $this->assertSame(\count($this->collections), $collections->combinedIterator()->countIterators());
-    }
-
     public function testCombinedCount()
     {
         $collections = new CollectionCollection($this->collections);
-        $this->assertSame(4, $collections->combinedCount());
+        $this->assertSame(4, $collections->flatten(1)->values()->count());
     }
 }
