@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace IxocreateTest\Collection;
 
 use Ixocreate\Collection\Collection;
+use Ixocreate\Collection\Exception\DuplicateKey;
 use PHPUnit\Framework\TestCase;
 
 class CollectionTest extends TestCase
@@ -31,7 +32,30 @@ class CollectionTest extends TestCase
         $this->assertSame($collection->toArray(), $collection2->toArray());
     }
 
-    public function testDuplicateKeysCheckGetsReset()
+    public function testDuplicateKeyCheckRunsOnForeachWithKey()
+    {
+        $collection = (new Collection([['id' => 1], ['id' => 1]]))
+            ->indexBy('id');
+
+        $this->expectException(DuplicateKey::class);
+        foreach ($collection as $key => $item) {
+            //
+        }
+    }
+
+    public function testDuplicateKeyCheckDoesNotRunOnForeachWithoutKey()
+    {
+        $collection = (new Collection([['id' => 1], ['id' => 1]]))
+            ->indexBy('id');
+
+        foreach ($collection as $item) {
+            //
+        }
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testDuplicateKeyCheckGetsReset()
     {
         $expected = [['id' => 1, 'name' => 'One'], ['id' => 1, 'name' => 'Two']];
 
