@@ -210,11 +210,7 @@ abstract class AbstractCollection implements CollectionInterface
     // \Iterator interface
     final public function current()
     {
-        $value = $this->input->current();
-        /**
-         * TODO: check $value and throw an exception in case of a type violation
-         */
-        return $value;
+        return $this->input->current();
     }
 
     // \Iterator interface
@@ -226,12 +222,15 @@ abstract class AbstractCollection implements CollectionInterface
     // \Iterator interface
     final public function key()
     {
-        $key = $this->input->key();
-
         /**
-         * strict indexBy requires keys to be unique - make sure this is the case while keys are being iterated
+         * Strict indexBy requires keys to be unique - make sure this is the case while keys are being iterated
+         * Note that this check will not be run when iterating over the collection with foreach ($collection as $value)
+         * as key() would not be called.
+         * Moving this check anywhere else would require all internal functions to call values() beforehand and
+         * values() itself would have to ignore strict duplicate checks.
          */
         if ($this->strictUniqueKeys) {
+            $key = $this->input->key();
             if (\in_array($key, $this->usedKeys)) {
                 throw new DuplicateKey();
             }
@@ -244,6 +243,10 @@ abstract class AbstractCollection implements CollectionInterface
     // \Iterator interface
     final public function valid()
     {
+        /**
+         * TODO: check $value and throw an exception in case of a type violation
+         */
+
         return $this->input->valid();
     }
 
