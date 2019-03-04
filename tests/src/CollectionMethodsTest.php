@@ -305,6 +305,25 @@ class CollectionMethodsTest extends TestCase
         $this->assertEquals($data, $collection->toArray());
 
         /**
+         * string key selector that would also work as a callable (e.g. global functions)
+         */
+        $collection = (new Collection($this->data()))
+            ->map(function ($item) {
+                /**
+                 * key is also a callable within the application
+                 */
+                $item['key'] = $item['id'];
+                return $item;
+            })
+            ->indexBy('key');
+        $data = [];
+        foreach ($this->data() as $array) {
+            $array['key'] = $array['id'];
+            $data[$array['key']] = $array;
+        }
+        $this->assertEquals($data, $collection->toArray());
+
+        /**
          * callable key selector
          */
         $collection = (new Collection($this->data()))

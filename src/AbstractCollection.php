@@ -71,7 +71,7 @@ abstract class AbstractCollection implements CollectionInterface
     }
 
     /**
-     * @param $input
+     * @param callable|array|Traversable $input
      * @return CollectionInterface
      */
     private function input($input = []): CollectionInterface
@@ -81,7 +81,10 @@ abstract class AbstractCollection implements CollectionInterface
         $this->inputFactory = null;
         $this->usedKeys = [];
 
-        if (\is_callable($input)) {
+        /**
+         * explicitly check that it's not a string callable which would accept global php functions as input
+         */
+        if (\is_callable($input) && !\is_string($input)) {
             $this->inputFactory = $input;
             $input = $input();
         }
@@ -120,7 +123,10 @@ abstract class AbstractCollection implements CollectionInterface
      */
     private function selector($selector = null): callable
     {
-        if (\is_callable($selector)) {
+        /**
+         * explicitly check that it's not a string callable which would accept global php functions as input
+         */
+        if (\is_callable($selector) && !\is_string($selector)) {
             return $selector;
         }
 
