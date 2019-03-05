@@ -58,6 +58,12 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame(14.1, (new Collection([8, 21, 13.3]))->avg());
 
         /**
+         * pushing another item changes average
+         */
+        $this->assertSame(2, (new Collection([1, 2, 2, 3]))->avg());
+        $this->assertSame(2.2, (new Collection([1, 2, 2, 3]))->push(3)->avg());
+
+        /**
          * no selector non-scalar values
          */
         $this->expectException(InvalidReturnValue::class);
