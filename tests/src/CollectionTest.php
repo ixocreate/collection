@@ -107,6 +107,12 @@ class CollectionTest extends TestCase
         $this->assertSame($expected, $collection->toArray());
     }
 
+    public function testIterator()
+    {
+        $collection = new Collection($this->data());
+        $this->assertInstanceOf(\Iterator::class, $collection);
+    }
+
     public function testJsonEncode()
     {
         $collection = new Collection($this->data());
@@ -117,5 +123,6 @@ class CollectionTest extends TestCase
     {
         $collection = new Collection($this->data());
         $this->assertSame($this->data(), $collection->toArray());
+        $this->assertSame(\array_values($collection->toArray()), $collection->values()->toArray());
     }
 }

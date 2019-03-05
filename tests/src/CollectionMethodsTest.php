@@ -155,24 +155,38 @@ class CollectionMethodsTest extends TestCase
 
     public function testDiff()
     {
-        $collection1 = new Collection($this->data());
+        $collection = new Collection($this->data());
         $data = $this->data();
         $last = \array_pop($data);
         $collection2 = new Collection($data);
-        $collection = $collection1->diff($collection2);
+        $diff = $collection->diff($collection2);
 
-        $this->assertInstanceOf(Collection::class, $collection);
-        $this->assertSame([$last], $collection->toArray());
+        $this->assertInstanceOf(Collection::class, $diff);
+        $this->assertSame([$last], $diff->values()->toArray());
 
-        $collection1 = (new Collection($this->data()))->indexBy('id');
+        $collection = $collection->indexBy('name');
         $data = $this->data();
         $last = \array_pop($data);
         $collection2 = new Collection($data);
-        $collection = $collection1->diff($collection2);
-        $this->assertSame([$last['id'] => $last], $collection->toArray());
+        $diff = $collection->diff($collection2);
+        $this->assertSame([$last['name'] => $last], $diff->toArray());
+    }
 
-        $this->expectException(InvalidCollection::class);
-        $collection1->diff(new CollectionCollection([]));
+    public function testDistinct()
+    {
+        $collection = new Collection([1, 1, 1, 1, 2, 2, 3, 4, 5, 6]);
+        $collection = $collection->distinct();
+        $this->assertSame([1, 2, 3, 4, 5, 6], $collection->values()->toArray());
+
+        $data = [];
+        foreach ($this->data() as $item) {
+            $data [] = $item;
+            $data [] = $item;
+        }
+        $collection = new Collection($data);
+        $collection = $collection->distinct();
+
+        $this->assertSame($this->data(), $collection->values()->toArray());
     }
 
     public function testEach()
@@ -187,9 +201,53 @@ class CollectionMethodsTest extends TestCase
             }
             $result[] = $item;
             $i++;
-        });
+        })->toArray();
 
         $this->assertSame([$this->data()[0]], $result);
+    }
+
+    public function testEvery()
+    {
+        $collection = new Collection($this->data());
+
+        $allHaveAnId = $collection->every(function ($item) {
+            return isset($item['id']);
+        });
+        $this->assertTrue($allHaveAnId);
+
+        $notAllAreCalledTheSame = $collection->every(function ($item) {
+            return $item['name'] === 'Davos Seaworth';
+        });
+        $this->assertFalse($notAllAreCalledTheSame);
+    }
+
+    public function testExcept()
+    {
+        $reject = [0, 4, 5];
+        $expected = [];
+        foreach ($this->data() as $key => $item) {
+            if (!\in_array($key, $reject)) {
+                $expected[] = $item;
+            }
+        }
+
+        $collection = new Collection($this->data());
+        $this->assertSame($expected, $collection->except($reject)->values()->toArray());
+    }
+
+    public function testExtract()
+    {
+        $collection = (new Collection($this->data()))->indexBy('id');
+        $data = [];
+        foreach ($this->data() as $array) {
+            $data[] = $array['name'];
+        }
+
+        $this->assertSame($data, $collection->extract("name")->toArray());
+
+        $this->assertSame($data, $collection->extract(function ($item) {
+            return $item['name'];
+        })->toArray());
     }
 
     public function testFilter()
@@ -215,6 +273,34 @@ class CollectionMethodsTest extends TestCase
             ],
             $collection->values()->toArray()
         );
+    }
+
+    public function testFind()
+    {
+        $collection = new Collection($this->data());
+
+        $item = $collection->find(function ($item) {
+            return $item['name'] === 'Brandon Stark';
+        });
+        $this->assertSame(
+            [
+                'id' => 6,
+                'name' => 'Brandon Stark',
+                'age' => 7,
+            ],
+            $item
+        );
+
+        $item = $collection->find(function ($item) {
+            return $item['name'] === 'John Doe';
+        });
+        $this->assertNull($item);
+
+        $expected = ['id' => 99, 'name' => 'John Doe'];
+        $item = $collection->find(function ($item) {
+            return $item['name'] === 'John Doe';
+        }, $expected);
+        $this->assertSame($expected, $item);
     }
 
     public function testFirst()
@@ -246,6 +332,34 @@ class CollectionMethodsTest extends TestCase
         })->first());
     }
 
+    public function testFlatten()
+    {
+        $data = $this->data();
+
+        $collection = new Collection([$data]);
+        $this->assertSame($this->data(), $collection->flatten(1)->toArray());
+
+        $collection = new Collection([[$data]]);
+        $this->assertSame($this->data(), $collection->flatten(2)->toArray());
+
+        $this->assertSame([$this->data()], $collection->flatten(1)->toArray());
+    }
+
+    public function testFlip()
+    {
+        $data = [
+            1 => 'One',
+            2 => 'Two',
+            3 => 'Three',
+            4 => 'Four',
+            5 => 'Five',
+        ];
+        $expected = \array_flip($data);
+
+        $collection = new Collection($data);
+        $this->assertSame($expected, $collection->flip()->toArray());
+    }
+
     public function testGet()
     {
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -260,6 +374,16 @@ class CollectionMethodsTest extends TestCase
         );
 
         $this->assertFalse($collection->get("doesntExists", false));
+    }
+
+    public function testGroupBy()
+    {
+        $expected = [];
+
+        $collection = new Collection($this->data());
+        var_dump($collection->groupBy('age')->toArray());
+
+        $this->assertSame($expected, $collection->groupBy('age')->toArray());
     }
 
     /**
@@ -283,6 +407,7 @@ class CollectionMethodsTest extends TestCase
     //    //$collection = new Collection([]);
     //    //$collection->avg('id');
     //}
+
     public function testHas()
     {
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -337,6 +462,14 @@ class CollectionMethodsTest extends TestCase
         $this->assertEquals($data, $collection->toArray());
     }
 
+    public function testIndexByConstructor()
+    {
+        $collection = new Collection($this->data(), 'name');
+        $collection2 = (new Collection($this->data()))->indexBy('name');
+
+        $this->assertSame($collection->toArray(), $collection2->toArray());
+    }
+
     public function testIndexByFilter()
     {
         $collection = (new Collection($this->data()))
@@ -363,6 +496,117 @@ class CollectionMethodsTest extends TestCase
             $collection->toArray()
         );
     }
+
+    public function testIndexByArrayAccessOffset()
+    {
+        $data = [];
+        foreach ($this->data() as $entry) {
+            $data[] = new class($entry) implements \ArrayAccess
+            {
+                private $data;
+
+                public function __construct(array $data)
+                {
+                    $this->data = $data;
+                }
+
+                public function offsetExists($offset)
+                {
+                    return isset($this->data[$offset]);
+                }
+
+                public function offsetGet($offset)
+                {
+                    return $this->data[$offset];
+                }
+
+                public function offsetSet($offset, $value)
+                {
+                    $this->data[$offset] = $value;
+                }
+
+                public function offsetUnset($offset)
+                {
+                    unset($this->data[$offset]);
+                }
+            };
+        }
+
+        $expected = [];
+        foreach ($data as $datum) {
+            $expected[$datum['name']] = $datum;
+        }
+
+        $collection = (new Collection($data))
+            ->indexBy('name');
+
+        $this->assertSame(
+            $expected,
+            $collection->toArray()
+        );
+    }
+
+    public function testIndexByGetterMagicMethod()
+    {
+        $data = [];
+        foreach ($this->data() as $entry) {
+            $data[] = new class($entry)
+            {
+                private $data;
+
+                public function __construct(array $data)
+                {
+                    $this->data = $data;
+                }
+
+                public function __get($name)
+                {
+                    return $this->data[$name];
+                }
+            };
+        }
+
+        $expected = [];
+        foreach ($data as $datum) {
+            $expected[$datum->name] = $datum;
+        }
+
+        $collection = (new Collection($data))
+            ->indexBy('name');
+
+        $this->assertSame($expected, $collection->toArray());
+    }
+
+    public function testIndexByPublicObjectProperty()
+    {
+        $data = [];
+        foreach ($this->data() as $entry) {
+            $data[] = new class($entry)
+            {
+                public $id;
+
+                public $name;
+
+                public function __construct(array $data)
+                {
+                    $this->id = $data['id'];
+                    $this->name = $data['name'];
+                }
+            };
+        }
+
+        $expected = [];
+        foreach ($data as $datum) {
+            $expected[$datum->name] = $datum;
+        }
+
+        $collection = (new Collection($data))
+            ->indexBy('name');
+
+        $this->assertSame($expected, $collection->toArray());
+    }
+
+
 
     public function testIndexByWithDuplicateKeys()
     {
@@ -643,21 +887,6 @@ class CollectionMethodsTest extends TestCase
         }
 
         $this->assertSame($items, $collection->toArray());
-    }
-
-    public function testParts()
-    {
-        $collection = (new Collection($this->data()))->indexBy('id');
-        $data = [];
-        foreach ($this->data() as $array) {
-            $data[] = $array['name'];
-        }
-
-        $this->assertSame($data, $collection->parts("name"));
-
-        $this->assertSame($data, $collection->parts(function ($item) {
-            return $item['name'];
-        }));
     }
 
     public function testPop()

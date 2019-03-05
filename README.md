@@ -6,7 +6,7 @@
 [![Packagist Pre Release](https://img.shields.io/packagist/vpre/ixocreate/collection.svg)](https://packagist.org/packages/ixocreate/collection)
 [![Packagist](https://img.shields.io/packagist/l/ixocreate/collection.svg)](https://packagist.org/packages/ixocreate/collection)
 
-Inspired by collection pipeline library https://github.com/DusanKasan/Knapsack and Laravel's collections. 
+Inspired by collection pipeline library [Knapsack](http://dusankasan.github.io/Knapsack) and [Laravel Collections](https://laravel.com/docs/master/collections). 
 
 ## Installation
 
