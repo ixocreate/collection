@@ -159,6 +159,23 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame(0, $collection->count());
     }
 
+    public function testCountBy()
+    {
+        $data = $this->data();
+        $expected = [];
+        foreach ($data as $datum) {
+            if (!isset($expected[$datum['age']])) {
+                $expected[$datum['age']] = 0;
+            }
+            $expected[$datum['age']]++;
+        }
+        \ksort($expected);
+
+        $collection = new Collection($this->data());
+
+        $this->assertSame($expected, $collection->countBy('age')->sortByKeys()->toArray());
+    }
+
     public function testDiff()
     {
         $collection = new Collection($this->data());
@@ -384,12 +401,17 @@ class CollectionMethodsTest extends TestCase
 
     public function testGroupBy()
     {
+        $data = $this->data();
         $expected = [];
+        foreach ($data as $datum) {
+            $expected[$datum['age']] = $datum;
+        }
+        $expected = \array_keys($expected);
+        \sort($expected);
+        $expected = \array_values($expected);
 
         $collection = new Collection($this->data());
-        var_dump($collection->groupBy('age')->toArray());
-
-        $this->assertSame($expected, $collection->groupBy('age')->toArray());
+        $this->assertSame($expected, $collection->groupBy('age')->keys()->sort()->values()->toArray());
     }
 
     /**
