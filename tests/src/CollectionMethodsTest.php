@@ -414,28 +414,6 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame($expected, $collection->groupBy('age')->keys()->sort()->values()->toArray());
     }
 
-    /**
-     * TODO: add median()
-     */
-    //public function testMedian()
-    //{
-    //    $collection = new Collection($this->data());
-    //
-    //    $median = 0;
-    //    foreach ($this->data() as $array) {
-    //        $median += $array['age'];
-    //    }
-    //    $median = (float)($median / \count($this->data()));
-    //    $this->assertSame($median, $collection->median('age'));
-    //
-    //    $this->assertSame($median, $collection->avg(function ($item) {
-    //        return $item['age'];
-    //    }));
-    //
-    //    //$collection = new Collection([]);
-    //    //$collection->avg('id');
-    //}
-
     public function testHas()
     {
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -529,8 +507,7 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) implements \ArrayAccess
-            {
+            $data[] = new class($entry) implements \ArrayAccess {
                 private $data;
 
                 public function __construct(array $data)
@@ -578,8 +555,7 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry)
-            {
+            $data[] = new class($entry) {
                 private $data;
 
                 public function __construct(array $data)
@@ -609,8 +585,7 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry)
-            {
+            $data[] = new class($entry) {
                 public $id;
 
                 public $name;
@@ -633,8 +608,6 @@ class CollectionMethodsTest extends TestCase
 
         $this->assertSame($expected, $collection->toArray());
     }
-
-
 
     public function testIndexByWithDuplicateKeys()
     {
@@ -779,6 +752,28 @@ class CollectionMethodsTest extends TestCase
         $collection = new Collection([]);
         $collection->max('id');
     }
+
+    /**
+     * TODO: add median()
+     */
+    //public function testMedian()
+    //{
+    //    $collection = new Collection($this->data());
+    //
+    //    $median = 0;
+    //    foreach ($this->data() as $array) {
+    //        $median += $array['age'];
+    //    }
+    //    $median = (float)($median / \count($this->data()));
+    //    $this->assertSame($median, $collection->median('age'));
+    //
+    //    $this->assertSame($median, $collection->avg(function ($item) {
+    //        return $item['age'];
+    //    }));
+    //
+    //    //$collection = new Collection([]);
+    //    //$collection->avg('id');
+    //}
 
     public function testMerge()
     {

@@ -27,7 +27,7 @@ final class ArrayCollection extends AbstractCollection
          */
         $items = $items->each(function ($value) {
             if (!\is_array($value)) {
-                throw new InvalidType('All items must be of type array. Got item of type ' . gettype($value));
+                throw new InvalidType('All items must be of type array. Got item of type ' . \gettype($value));
             }
         });
 

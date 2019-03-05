@@ -129,7 +129,7 @@ abstract class AbstractCollection implements CollectionInterface
         }
 
         /**
-         * TODO: reimplement; used for extract()
+         * TODO: re-implement; used for extract()
          * A dot separated key path works as well. Supports the * wildcard. If a key contains \ or it must be escaped using \ character.
          */
         //$keyPath = $selector;
@@ -175,7 +175,7 @@ abstract class AbstractCollection implements CollectionInterface
                 try {
                     return $value->{$selector};
                 } catch (\Exception $exception) {
-
+                    //
                 }
             }
             return null;
@@ -396,10 +396,9 @@ abstract class AbstractCollection implements CollectionInterface
         if ($this->count !== null) {
             return $this->count;
         }
-
         $collection = $this->items();
-
         $count = 0;
+
         /**
          * note that omitting $key in the loop will not trigger a DuplicateKeys exception when $strictUniqueKeys is set ...
          *
@@ -796,10 +795,9 @@ abstract class AbstractCollection implements CollectionInterface
             $result[$newKey][] = $value;
         }
 
-        return Collection::from($result)
-            ->map(function ($entry) {
-                return new Collection($entry);
-            });
+        return (clone $this)->input($result)->map(function ($entry) {
+            return new Collection($entry);
+        });
     }
 
     /**
@@ -1113,7 +1111,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         return $result;
 
-        return max($this->items());
+        return \max($this->items());
     }
 
     ///**
@@ -1184,7 +1182,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         return $result;
 
-        return min($this->items());
+        return \min($this->items());
     }
 
     ///**
@@ -1632,7 +1630,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         return dereferenceKeyValue($buffer);
 
-        return shuffle($this->items());
+        return \shuffle($this->items());
     }
 
     ///**

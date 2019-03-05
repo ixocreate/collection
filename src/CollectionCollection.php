@@ -23,7 +23,7 @@ final class CollectionCollection extends AbstractCollection
          */
         $items = $items->each(function ($value) {
             if (!($value instanceof CollectionInterface)) {
-                throw new InvalidType('All items have to be of type ' . CollectionInterface::class . '. Got item of type ' . gettype($value));
+                throw new InvalidType('All items have to be of type ' . CollectionInterface::class . '. Got item of type ' . \gettype($value));
             }
         });
 
