@@ -1809,52 +1809,41 @@ abstract class AbstractCollection implements CollectionInterface
         return some($this->items(), $callable);
     }
 
-    /**
-     * Returns a non-lazy collection sorted using $callable($item1, $item2, $key1, $key2 ). $callable should
-     * return true if first item is larger than the second and false otherwise.
-     *
-     * @param callable $callable ($value1, $value2, $key1, $key2)
-     * @return CollectionInterface
-     */
-    final public function sort(callable $callable): CollectionInterface
+    final public function sort($callable = null): CollectionInterface
     {
         $collection = $this->items();
 
-        $array = \iterator_to_array(
-            values(
-                map(
-                    $collection,
-                    function ($value, $key) {
-                        return [$key, $value];
-                    }
-                )
-            )
-        );
+        $items = $collection
+            ->map(function ($value, $key) {
+                return [$key, $value];
+            })
+            ->values()
+            ->toArray();
+
+        if ($callable === null) {
+            $callable = function ($value1, $value2) {
+                return $value1 > $value2;
+            };
+        }
 
         \uasort(
-            $array,
+            $items,
             function ($a, $b) use ($callable) {
                 return $callable($a[1], $b[1], $a[0], $b[0]);
             }
         );
 
-        return dereferenceKeyValue($array);
-
-        return sort($this->items(), $callable);
+        return $this->dereferenceKeyValue($items);
     }
 
-    ///**
-    // * Sorts the current collection based on a given callable
-    // *
-    // * @param callable $callable
-    // * @return CollectionInterface
-    // */
-    //final public function sort(callable $callable): CollectionInterface
-    //{
-    //    $items = $this->items;
-    //    \usort($items, $callable);
-    //    return new static($items, $this->indexByKey);
-    //}
+    final public function sortByKeys(): CollectionInterface
+    {
+        $collection = $this->items();
+
+        return $collection->sort(function ($value1, $value2, $key1, $key2) {
+            return $key1 > $key2;
+        });
+    }
 
     /**
      * Split the collection into groups and return them as a collection
