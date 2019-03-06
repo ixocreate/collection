@@ -687,27 +687,6 @@ abstract class AbstractCollection implements CollectionInterface
         });
     }
 
-    final public function groupByKey($key): CollectionInterface
-    {
-        $collection = $this->items();
-
-        $generatorFactory = function () use ($collection, $key) {
-            return groupBy(
-                filter(
-                    $collection,
-                    function ($item) use ($key) {
-                        return isCollection($item) && has($item, $key);
-                    }
-                ),
-                function ($value) use ($key) {
-                    return get($value, $key);
-                }
-            );
-        };
-
-        return (clone $this)->input($generatorFactory);
-    }
-
     final public function has($key): bool
     {
         $collection = $this->items();
