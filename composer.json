@@ -16,13 +16,19 @@
         "ixocreate/collection-contract": "dev-develop"
     },
     "require-dev": {
-        "ixocreate/coding-standard": "^1.0",
-        "phpunit/phpunit": "^6.0.6",
-        "php-coveralls/php-coveralls": "^2.1"
+        "ixocreate/coding-standard": "^1.0.1",
+        "php-coveralls/php-coveralls": "^2.1",
+        "phpunit/phpunit": "^6.0.6"
     },
     "autoload": {
         "psr-4": {
             "Ixocreate\\Collection\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IxocreateMisc\\Collection\\": "tests/misc/",
+            "IxocreateTest\\Collection\\": "tests/src/"
         }
     },
     "scripts": {
