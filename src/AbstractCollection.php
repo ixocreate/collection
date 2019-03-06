@@ -696,7 +696,9 @@ abstract class AbstractCollection implements CollectionInterface
 
     final public function implode($glue = ', ', $selector = null)
     {
-        //TODO: return implode();
+        $collection = $this->items();
+
+        return \implode($glue, $collection->extract($selector)->toArray());
     }
 
     final public function indexBy($selector): CollectionInterface
@@ -1560,7 +1562,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        return $collection->slice( 0, $numberOfItems);
+        return $collection->slice(0, $numberOfItems);
     }
 
     final public function takeNth($step, $offset = 0): CollectionInterface

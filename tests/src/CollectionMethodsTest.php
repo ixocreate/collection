@@ -445,6 +445,19 @@ class CollectionMethodsTest extends TestCase
         $this->assertFalse($collection->has("doesntExists"));
     }
 
+    public function testImplode()
+    {
+        $collection = new Collection([1, 2, 3]);
+        $this->assertSame('1, 2, 3', $collection->implode());
+        $this->assertSame('1.2.3', $collection->implode('.'));
+
+        $collection = new Collection($this->data());
+        $collection = $collection->filter(function($item){
+            return $item['age'] <= 8;
+        });
+        $this->assertSame('Brandon Stark, Brandon Stark Twin', $collection->implode(', ', 'name'));
+    }
+
     public function testIndexBy()
     {
         /**
