@@ -16,6 +16,7 @@ class MultipleOperationsTest extends TestCase
 {
     /**
      * Example of a longer pipeline. If this was real code, you should probably split it into smaller chunks.
+     * From Knapsack's test scenarios.
      */
     public function testIt()
     {

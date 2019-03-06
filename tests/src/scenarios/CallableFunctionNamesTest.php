@@ -16,6 +16,7 @@ class CallableFunctionNamesTest extends TestCase
 {
     /**
      * Example that it's possible to use callable function names as arguments.
+     * From Knapsack's test scenarios.
      */
     public function testIt()
     {

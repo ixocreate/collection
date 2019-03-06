@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * More advanced usage of collection pipeline, see
  * http://martinfowler.com/articles/refactoring-pipelines.html#GroupingFlightRecords for reference.
+ * From Knapsack's test scenarios.
  */
 class GroupingFlightsTest extends TestCase
 {
