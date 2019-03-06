@@ -693,6 +693,15 @@ class CollectionMethodsTest extends TestCase
         $this->assertTrue($collection->isEmpty());
     }
 
+    public function testIsNotEmpty()
+    {
+        $collection = new Collection($this->data());
+        $this->assertTrue($collection->isNotEmpty());
+
+        $collection = new Collection([]);
+        $this->assertFalse($collection->isNotEmpty());
+    }
+
     public function testKeys()
     {
         $collection = (new Collection($this->data()))
