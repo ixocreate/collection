@@ -647,11 +647,13 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generatorFactory);
     }
 
-    final public function frequencies($selector = null): CollectionInterface
+    final public function frequencies(): CollectionInterface
     {
         $collection = $this->items();
 
-        return $collection->countBy($selector);
+        return $collection->countBy(function ($value) {
+            return $value;
+        });
     }
 
     final public function get($key, $default = null)

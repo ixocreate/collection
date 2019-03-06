@@ -400,6 +400,12 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame($expected, $collection->flip()->toArray());
     }
 
+    public function testFrequencies()
+    {
+        $collection = new Collection([1, 3, 3, 2,]);
+        $this->assertSame([1 => 1, 3 => 2, 2 => 1], $collection->frequencies()->toArray());
+    }
+
     public function testGet()
     {
         $collection = (new Collection($this->data()))->indexBy('id');
