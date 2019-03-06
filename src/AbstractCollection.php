@@ -62,7 +62,7 @@ abstract class AbstractCollection implements CollectionInterface
          * For this reason the input is passed to a dedicated setter which can be called after cloning.
          *
          * ```
-         * return (clone $this)->input($generatorFactory);
+         * return (clone $this)->input($generator);
          * ```
          */
         return $this->input($items);
@@ -150,7 +150,7 @@ abstract class AbstractCollection implements CollectionInterface
         //    return $coll;
         //};
         //
-        //$generatorFactory = function () use ($collection, $extractor) {
+        //$generator = function () use ($collection, $extractor) {
         //    foreach ($collection as $value) {
         //        foreach ($extractor([$value]) as $extracted) {
         //            yield $extracted;
@@ -194,13 +194,13 @@ abstract class AbstractCollection implements CollectionInterface
      */
     private function dereferenceKeyValue($collection)
     {
-        $generatorFactory = function () use ($collection) {
+        $generator = function () use ($collection) {
             foreach ($collection as $value) {
                 yield $value[0] => $value[1];
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     /**
@@ -328,7 +328,7 @@ abstract class AbstractCollection implements CollectionInterface
     // */
     //final public function combine($collection): CollectionInterface
     //{
-    //    $generatorFactory = function () use ($keys, $values) {
+    //    $generator = function () use ($keys, $values) {
     //        $keyCollection = new Collection($keys);
     //        $valueIt = new IteratorIterator(new Collection($values));
     //        $valueIt->rewind();
@@ -343,7 +343,7 @@ abstract class AbstractCollection implements CollectionInterface
     //        }
     //    };
     //
-    //    return (clone $this)->input($generatorFactory);
+    //    return (clone $this)->input($generator);
     //
     //    return combine($this->items(), $collection);
     //}
@@ -352,7 +352,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $collections) {
+        $generator = function () use ($collection, $collections) {
             foreach ($collection as $k => $v) {
                 yield $k => $v;
             }
@@ -363,7 +363,7 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function contains($needle): bool
@@ -423,7 +423,7 @@ abstract class AbstractCollection implements CollectionInterface
             ->values()
             ->toArray();
 
-        $generatorFactory = function () use ($collection, $valuesToCompare) {
+        $generator = function () use ($collection, $valuesToCompare) {
             foreach ($collection as $key => $value) {
                 if (!\in_array($value, $valuesToCompare)) {
                     yield $key => $value;
@@ -431,14 +431,14 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function distinct(): CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection) {
+        $generator = function () use ($collection) {
             $distinctValues = [];
 
             foreach ($collection as $key => $value) {
@@ -449,80 +449,14 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
-
-    ///**
-    // * A form of slice that returns all but first $numberOfItems items.
-    // *
-    // * @param int $numberOfItems
-    // * @return CollectionInterface
-    // */
-    //final public function drop($numberOfItems)
-    //{
-    //    $collection = $this->items();
-    //
-    //    return $collection->slice($numberOfItems);
-    //}
-
-    ///**
-    // * Returns a lazy collection with last $numberOfItems items skipped. These are still iterated over, just skipped.
-    // *
-    // * @param int $numberOfItems
-    // * @return CollectionInterface
-    // */
-    //final public function dropLast($numberOfItems = 1)
-    //{
-    //    $collection = $this->items();
-    //
-    //    $generatorFactory = function () use ($collection, $numberOfItems) {
-    //        $buffer = [];
-    //
-    //        foreach ($collection as $key => $value) {
-    //            $buffer[] = [$key, $value];
-    //
-    //            if (\count($buffer) > $numberOfItems) {
-    //                $val = \array_shift($buffer);
-    //                yield $val[0] => $val[1];
-    //            }
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generatorFactory);
-    //}
-
-    ///**
-    // * Returns a lazy collection by removing items from this collection until first item for which $callable returns
-    // * false.
-    // *
-    // * @param callable $callable
-    // * @return CollectionInterface
-    // */
-    //final public function dropWhile(callable $callable)
-    //{
-    //    $collection = $this->items();
-    //
-    //    $generatorFactory = function () use ($collection, $callable) {
-    //        $shouldDrop = true;
-    //        foreach ($collection as $key => $value) {
-    //            if ($shouldDrop) {
-    //                $shouldDrop = $callable($value, $key);
-    //            }
-    //
-    //            if (!$shouldDrop) {
-    //                yield $key => $value;
-    //            }
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generatorFactory);
-    //}
 
     final public function each(callable $callable): CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $callable) {
+        $generator = function () use ($collection, $callable) {
             foreach ($collection as $key => $value) {
                 $callable($value, $key);
 
@@ -530,7 +464,7 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function every(callable $callable)
@@ -561,13 +495,13 @@ abstract class AbstractCollection implements CollectionInterface
         $collection = $this->items();
         $selector = $this->selector($selector);
 
-        $generatorFactory = function () use ($collection, $selector) {
+        $generator = function () use ($collection, $selector) {
             foreach ($collection as $value) {
                 yield $selector($value);
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function filter(callable $callable): CollectionInterface
@@ -580,7 +514,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $callable) {
+        $generator = function () use ($collection, $callable) {
             foreach ($collection as $key => $value) {
                 if ($callable($value, $key)) {
                     yield $key => $value;
@@ -588,7 +522,7 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function find(callable $callable, $default = null)
@@ -615,7 +549,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $depth) {
+        $generator = function () use ($collection, $depth) {
             $flattenNextLevel = $depth < 0 || $depth > 0;
             $childLevelsToFlatten = $depth > 0 ? $depth - 1 : $depth;
 
@@ -631,20 +565,20 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function flip(): CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection) {
+        $generator = function () use ($collection) {
             foreach ($collection as $key => $value) {
                 yield $value => $key;
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function frequencies(): CollectionInterface
@@ -706,80 +640,23 @@ abstract class AbstractCollection implements CollectionInterface
         $selector = $this->selector($selector);
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $selector) {
+        $generator = function () use ($collection, $selector) {
             foreach ($collection as $key => $value) {
                 yield $selector($value, $key) ?? $key => $value;
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
-
-    ///**
-    // * Returns a lazy collection of first item from first collection, first item from second, second from first and
-    // * so on. Accepts any number of collections.
-    // *
-    // * @param array|\Traversable ...$collections
-    // * @return CollectionInterface
-    // */
-    //final public function interleave(...$collections): CollectionInterface
-    //{
-    //    $generatorFactory = function () use ($collections) {
-    //        /* @var Iterator[] $iterators */
-    //        $iterators = array_map(
-    //            function ($collection) {
-    //                $it = new IteratorIterator(new Collection($collection));
-    //                $it->rewind();
-    //                return $it;
-    //            },
-    //            $collections
-    //        );
-    //
-    //        do {
-    //            $valid = false;
-    //            foreach ($iterators as $it) {
-    //                if ($it->valid()) {
-    //                    yield $it->key() => $it->current();
-    //                    $it->next();
-    //                    $valid = true;
-    //                }
-    //            }
-    //        } while ($valid);
-    //    };
-    //
-    //    return (clone $this)->input($generatorFactory);
-    //
-    //    return interleave($this->items(), ...$collections);
-    //}
-
-    ///**
-    // * Returns a lazy collection of items of this collection separated by $separator
-    // *
-    // * @param mixed $separator
-    // * @return CollectionInterface
-    // */
-    //final public function interpose($separator): CollectionInterface
-    //{
-    //    $generatorFactory = function () use ($collection, $separator) {
-    //        foreach (take($collection, 1) as $key => $value) {
-    //            yield $key => $value;
-    //        }
-    //
-    //        foreach (drop($collection, 1) as $key => $value) {
-    //            yield $separator;
-    //            yield $key => $value;
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generatorFactory);
-    //
-    //    return interpose($this->items(), $separator);
-    //}
 
     final public function intersect(...$collections): CollectionInterface
     {
-        $valuesToCompare = toArray(values(concat(...$collections)));
-        $generatorFactory = function () use ($collection, $valuesToCompare) {
+        $collection = $this->items();
+
+        //$valuesToCompare = toArray(values(concat(...$collections)));
+        $valuesToCompare = (new Collection())->concat(...$collections)->values()->toArray();
+
+        $generator = function () use ($collection, $valuesToCompare) {
             foreach ($collection as $key => $value) {
                 if (\in_array($value, $valuesToCompare)) {
                     yield $key => $value;
@@ -787,9 +664,7 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
-
-        return intersect($this->items(), ...$collections);
+        return (clone $this)->input($generator);
     }
 
     ///**
@@ -843,13 +718,13 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection) {
+        $generator = function () use ($collection) {
             foreach ($collection as $key => $value) {
                 yield $key;
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function last()
@@ -863,13 +738,13 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $callable) {
+        $generator = function () use ($collection, $callable) {
             foreach ($collection as $key => $value) {
                 yield $key => $callable($value, $key);
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     ///**
@@ -1035,7 +910,7 @@ abstract class AbstractCollection implements CollectionInterface
     // */
     //final public function partition($numberOfItems, $step = 0, $padding = [])
     //{
-    //    $generatorFactory = function () use ($collection, $numberOfItems, $step, $padding) {
+    //    $generator = function () use ($collection, $numberOfItems, $step, $padding) {
     //        $buffer = [];
     //        $itemsToSkip = 0;
     //        $tmpStep = $step ?: $numberOfItems;
@@ -1061,7 +936,7 @@ abstract class AbstractCollection implements CollectionInterface
     //        );
     //    };
     //
-    //    return (clone $this)->input($generatorFactory);
+    //    return (clone $this)->input($generator);
     //
     //    return partition($this->items(), $numberOfItems, $step, $padding);
     //}
@@ -1075,7 +950,7 @@ abstract class AbstractCollection implements CollectionInterface
     // */
     //final public function partitionBy(callable $callable)
     //{
-    //    $generatorFactory = function () use ($collection, $callable) {
+    //    $generator = function () use ($collection, $callable) {
     //        $result = null;
     //        $buffer = [];
     //
@@ -1096,7 +971,7 @@ abstract class AbstractCollection implements CollectionInterface
     //        }
     //    };
     //
-    //    return (clone $this)->input($generatorFactory);
+    //    return (clone $this)->input($generator);
     //
     //    return partitionBy($this->items(), $callable);
     //}
@@ -1163,7 +1038,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $value, $key) {
+        $generator = function () use ($collection, $value, $key) {
             foreach ($collection as $k => $v) {
                 yield $k => $v;
             }
@@ -1175,7 +1050,7 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     /**
@@ -1246,7 +1121,7 @@ abstract class AbstractCollection implements CollectionInterface
     // */
     //final public function reductions(callable $callable, $startValue)
     //{
-    //    $generatorFactory = function () use ($collection, $callable, $startValue) {
+    //    $generator = function () use ($collection, $callable, $startValue) {
     //        $tmp = duplicate($startValue);
     //
     //        yield $tmp;
@@ -1256,7 +1131,7 @@ abstract class AbstractCollection implements CollectionInterface
     //        }
     //    };
     //
-    //    return (clone $this)->input($generatorFactory);
+    //    return (clone $this)->input($generator);
     //
     //    return reductions($this->items(), $callable, $startValue);
     //}
@@ -1279,14 +1154,14 @@ abstract class AbstractCollection implements CollectionInterface
     // */
     //final public function replace($replacementMap)
     //{
-    //    $generatorFactory = function () use ($collection, $replacementMap) {
+    //    $generator = function () use ($collection, $replacementMap) {
     //        foreach ($collection as $key => $value) {
     //            $newValue = getOrDefault($replacementMap, $value, $value);
     //            yield $key => $newValue;
     //        }
     //    };
     //
-    //    return (clone $this)->input($generatorFactory);
+    //    return (clone $this)->input($generator);
     //
     //    return replace($this->items(), $replacementMap);
     //}
@@ -1300,14 +1175,14 @@ abstract class AbstractCollection implements CollectionInterface
     // */
     //final public function replaceByKeys($replacementMap)
     //{
-    //    $generatorFactory = function () use ($collection, $replacementMap) {
+    //    $generator = function () use ($collection, $replacementMap) {
     //        foreach ($collection as $key => $value) {
     //            $newValue = getOrDefault($replacementMap, $key, $value);
     //            yield $key => $newValue;
     //        }
     //    };
     //
-    //    return (clone $this)->input($generatorFactory);
+    //    return (clone $this)->input($generator);
     //
     //    return replaceByKeys($this->items(), $replacementMap);
     //}
@@ -1319,7 +1194,7 @@ abstract class AbstractCollection implements CollectionInterface
      */
     final public function reverse(): CollectionInterface
     {
-        $generatorFactory = function () use ($collection) {
+        $generator = function () use ($collection) {
             $array = [];
             foreach ($collection as $key => $value) {
                 $array[] = [$key, $value];
@@ -1338,7 +1213,7 @@ abstract class AbstractCollection implements CollectionInterface
             );
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
 
         return reverse($this->items());
     }
@@ -1429,7 +1304,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $from, $to) {
+        $generator = function () use ($collection, $from, $to) {
             //    $index = 0;
             //    foreach ($collection as $key => $value) {
             //        if ($index >= $from && ($index < $to || $to == -1)) {
@@ -1442,7 +1317,7 @@ abstract class AbstractCollection implements CollectionInterface
             //    }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function some(callable $callable): bool
@@ -1508,42 +1383,6 @@ abstract class AbstractCollection implements CollectionInterface
         return $this->chunk((int)\ceil($this->count() / $groups), $preserveKeys);
     }
 
-    ///**
-    // * Returns a collection of [take($position), drop($position)]
-    // *
-    // * @param int $position
-    // * @return CollectionInterface
-    // */
-    //final public function splitAt($position)
-    //{
-    //    $generatorFactory = function () use ($collection, $position) {
-    //        yield take($collection, $position);
-    //        yield drop($collection, $position);
-    //    };
-    //
-    //    return (clone $this)->input($generatorFactory);
-    //
-    //    return splitAt($this->items(), $position);
-    //}
-
-    ///**
-    // * Returns a collection of [takeWhile($predicament), dropWhile($predicament]
-    // *
-    // * @param callable $callable
-    // * @return CollectionInterface
-    // */
-    //final public function splitWith(callable $callable)
-    //{
-    //    $generatorFactory = function () use ($collection, $callable) {
-    //        yield takeWhile($collection, $callable);
-    //        yield dropWhile($collection, $callable);
-    //    };
-    //
-    //    return (clone $this)->input($generatorFactory);
-    //
-    //    return splitWith($this->items(), $callable);
-    //}
-
     final public function sum($selector = null)
     {
         $selector = $this->selector($selector);
@@ -1580,7 +1419,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $step, $offset) {
+        $generator = function () use ($collection, $step, $offset) {
             $index = 0;
             foreach ($collection as $key => $value) {
                 if ($index % $step == 0) {
@@ -1591,7 +1430,7 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     /**
@@ -1605,33 +1444,6 @@ abstract class AbstractCollection implements CollectionInterface
     {
         return $this->takeNth($step, $offset);
     }
-
-    ///**
-    // * Returns a lazy collection of items from the start of the collection until the first item for which $callable
-    // * returns false.
-    // *
-    // * @param callable $callable
-    // * @return CollectionInterface
-    // */
-    //final public function takeWhile(callable $callable)
-    //{
-    //    $collection = $this->items();
-    //
-    //    $generatorFactory = function () use ($collection, $callable) {
-    //        $shouldTake = true;
-    //        foreach ($collection as $key => $value) {
-    //            if ($shouldTake) {
-    //                $shouldTake = $callable($value, $key);
-    //            }
-    //
-    //            if ($shouldTake) {
-    //                yield $key => $value;
-    //            }
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generatorFactory);
-    //}
 
     final public function toArray(): array
     {
@@ -1682,7 +1494,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection, $value, $key) {
+        $generator = function () use ($collection, $value, $key) {
             if ($key === null) {
                 yield $value;
             } else {
@@ -1694,20 +1506,20 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function values(): CollectionInterface
     {
         $collection = $this->items();
 
-        $generatorFactory = function () use ($collection) {
+        $generator = function () use ($collection) {
             foreach ($collection as $value) {
                 yield $value;
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
     }
 
     final public function zip(...$collections): CollectionInterface
@@ -1722,7 +1534,7 @@ abstract class AbstractCollection implements CollectionInterface
             $collections
         );
 
-        $generatorFactory = function () use ($iterators) {
+        $generator = function () use ($iterators) {
             while (true) {
                 $isMissingItems = false;
                 $zippedItem = new Collection([]);
@@ -1745,7 +1557,7 @@ abstract class AbstractCollection implements CollectionInterface
             }
         };
 
-        return (clone $this)->input($generatorFactory);
+        return (clone $this)->input($generator);
 
         \array_unshift($collections, $this->items());
 
