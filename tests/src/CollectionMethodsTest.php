@@ -134,10 +134,27 @@ class CollectionMethodsTest extends TestCase
             ->toArray();
     }
 
+    public function testConcat()
+    {
+        $collection = new Collection([1, 3, 3, 2]);
+
+        $collection = $collection
+            ->strictUniqueKeys(false)
+            ->concat([4, 5]);
+
+        $this->assertSame(6, $collection->values()->count());
+        $this->assertSame([4, 5, 3, 2], $collection->toArray());
+    }
+
     public function testContains()
     {
         $collection = new Collection($this->data());
         $this->assertTrue($collection->contains($this->data()[4]));
+
+        $collection = new Collection([1, 3, 3, 2]);
+        $this->assertTrue($collection->contains(3));
+        $this->assertFalse($collection->contains(true));
+
     }
 
     public function testCount()
@@ -507,7 +524,8 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) implements \ArrayAccess {
+            $data[] = new class($entry) implements \ArrayAccess
+            {
                 private $data;
 
                 public function __construct(array $data)
@@ -555,7 +573,8 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) {
+            $data[] = new class($entry)
+            {
                 private $data;
 
                 public function __construct(array $data)
@@ -585,7 +604,8 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) {
+            $data[] = new class($entry)
+            {
                 public $id;
 
                 public $name;

@@ -350,7 +350,12 @@ abstract class AbstractCollection implements CollectionInterface
 
     final public function concat(...$collections): CollectionInterface
     {
-        $generatorFactory = function () use ($collections) {
+        $collection = $this->items();
+
+        $generatorFactory = function () use ($collection, $collections) {
+            foreach ($collection as $k => $v) {
+                yield $k => $v;
+            }
             foreach ($collections as $collection) {
                 foreach ($collection as $key => $value) {
                     yield $key => $value;
