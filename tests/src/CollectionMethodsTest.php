@@ -200,7 +200,6 @@ class CollectionMethodsTest extends TestCase
         $collection2 = new Collection($data);
         $diff = $collection->diff($collection2);
 
-        $this->assertInstanceOf(Collection::class, $diff);
         $this->assertSame([$last], $diff->values()->toArray());
 
         $collection = $collection->indexBy('name');
@@ -714,35 +713,17 @@ class CollectionMethodsTest extends TestCase
     public function testLast()
     {
         $data = $this->data();
-        $last = \array_pop($data);
         $collection = new Collection($this->data());
+        $last = \array_pop($data);
         $this->assertSame($last, $collection->last());
-
-        $this->assertSame(
-            [
-                'id' => 5,
-                'name' => 'Jon Snow',
-                'age' => 14,
-            ],
-            $collection->last(function ($item) {
-                if ($item['id'] === 5) {
-                    return $item;
-                }
-                return null;
-            })
-        );
-
-        $this->assertNull($collection->last(function ($item) {
-            if ($item['id'] === 21380) {
-                return $item;
-            }
-            return null;
-        }));
     }
 
     public function testMax()
     {
-        $collection = (new Collection($this->data()))->indexBy('id');
+        $collection = (new Collection($this->data()))
+            ->indexBy('id')
+            ->get();
+
         $oldGuys = [
             [
                 'id' => 10,
@@ -759,9 +740,6 @@ class CollectionMethodsTest extends TestCase
             (new Collection($oldGuys, 'id'))->toArray(),
             $collection->max('age')->toArray()
         );
-
-        $this->assertInstanceOf(Collection::class, $collection->max('age'));
-
 
         $collection = new Collection($this->data());
         $oldGuys = [
@@ -873,8 +851,6 @@ class CollectionMethodsTest extends TestCase
             (new Collection($youngster, 'id'))->toArray(),
             $collection->min('age')->toArray()
         );
-
-        $this->assertInstanceOf(Collection::class, $collection->min('age'));
 
         $collection = new Collection($this->data());
 
@@ -1005,8 +981,6 @@ class CollectionMethodsTest extends TestCase
             return $item['id'] == 1;
         });
 
-        $this->assertInstanceOf(Collection::class, $pulledCollection);
-
         $data = $this->data();
         $first = \array_shift($data);
 
@@ -1135,8 +1109,6 @@ class CollectionMethodsTest extends TestCase
         $collectionShuffle = $collection->shuffle();
         $this->assertSame($collection->count(), $collectionShuffle->count());
 
-        $this->assertInstanceOf(Collection::class, $collectionShuffle);
-
         $collection1 = $collection->sort(function ($item1, $item2) {
             return $item1['id'] - $item2['id'];
         });
@@ -1174,8 +1146,6 @@ class CollectionMethodsTest extends TestCase
             ],
             $collection->slice(15)->toArray()
         );
-
-        $this->assertInstanceOf(Collection::class, $collection->slice(15));
 
         $collection = (new Collection($this->data()))->indexBy('id');
         $this->assertSame(
@@ -1324,7 +1294,6 @@ class CollectionMethodsTest extends TestCase
         $chunkedCollection = (new Collection($this->data()))
             ->split(4, true);
 
-        $this->assertInstanceOf(Collection::class, $chunkedCollection);
         $this->assertSame(4, $chunkedCollection->count());
         $this->assertSame(\count($this->data()), $chunkedCollection->flatten(1)->values()->count());
 

@@ -667,35 +667,6 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generator);
     }
 
-    ///**
-    // * Return a collection of intersecting collection items
-    // *
-    // * @param CollectionInterface $collection
-    // * @return CollectionInterface
-    // */
-    //final public function intersect(CollectionInterface $collection): CollectionInterface
-    //{
-    //    if (!$collection instanceof $this) {
-    //        throw new InvalidCollectionException(
-    //            \sprintf(
-    //                "'collection' must be a '%s', '%s' given",
-    //                \get_class($this),
-    //                \get_class($collection)
-    //            )
-    //        );
-    //    }
-    //
-    //    $array = \array_uintersect($this->items, $collection->all(), function ($value1, $value2) {
-    //        if ($value1 === $value2) {
-    //            return 0;
-    //        }
-    //
-    //        return -1;
-    //    });
-    //
-    //    return new static($array, $this->indexByKey);
-    //}
-
     final public function isEmpty(): bool
     {
         $collection = $this->items();
@@ -747,19 +718,6 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generator);
     }
 
-    ///**
-    // * Returns a lazy collection which is a result of calling map($callable) and then flatten(1)
-    // *
-    // * @param callable $callable
-    // * @return CollectionInterface
-    // */
-    //final public function mapcat(callable $callable)
-    //{
-    //    return flatten(map($collection, $callable), 1);
-    //
-    //    return mapcat($this->items(), $callable);
-    //}
-
     /**
      * Returns maximal value from this collection.
      *
@@ -775,8 +733,6 @@ abstract class AbstractCollection implements CollectionInterface
         }
 
         return $result;
-
-        return \max($this->items());
     }
 
     ///**
