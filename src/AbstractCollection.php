@@ -738,7 +738,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         $values = $collection->extract($selector)
             ->filter(function ($item) {
-                return !is_null($item);
+                return $item !== null;
             })->sort()->values();
 
         $count = $values->count();
