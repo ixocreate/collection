@@ -732,6 +732,27 @@ abstract class AbstractCollection implements CollectionInterface
         return $result;
     }
 
+    final public function median($selector = null)
+    {
+        $collection = $this->items();
+
+        $values = $collection->extract($selector)
+            ->filter(function ($item) {
+                return !is_null($item);
+            })->sort()->values();
+
+        $count = $values->count();
+        if ($count == 0) {
+            return null;
+        }
+
+        $middle = (int) ($count / 2);
+        if ($count % 2) {
+            return $values->get($middle);
+        }
+
+        return (clone $this)->input([$values->get($middle - 1), $values->get($middle)])->avg();
+    }
 
     /**
      * Merge another collection into the current collection
@@ -753,7 +774,7 @@ abstract class AbstractCollection implements CollectionInterface
         return new static(\array_merge($this->items, $collection->all()), $this->indexByKey);
     }
 
-    final public function min($selector = null): CollectionInterface
+    final public function min($selector = null)
     {
         $selector = $this->selector($selector);
         $collection = $this->items();

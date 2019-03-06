@@ -738,29 +738,25 @@ class CollectionMethodsTest extends TestCase
 
         $collection = (new Collection([42, 1337, 52]));
         $this->assertEquals(1337, $collection->max());
+
+        $collection = (new Collection());
+        $this->assertNull($collection->max());
     }
 
-    /**
-     * TODO: add median()
-     */
-    //public function testMedian()
-    //{
-    //    $collection = new Collection($this->data());
-    //
-    //    $median = 0;
-    //    foreach ($this->data() as $array) {
-    //        $median += $array['age'];
-    //    }
-    //    $median = (float)($median / \count($this->data()));
-    //    $this->assertSame($median, $collection->median('age'));
-    //
-    //    $this->assertSame($median, $collection->avg(function ($item) {
-    //        return $item['age'];
-    //    }));
-    //
-    //    //$collection = new Collection([]);
-    //    //$collection->avg('id');
-    //}
+    public function testMedian()
+    {
+        $collection = new Collection($this->data());
+        $this->assertSame(17.5, $collection->median('age'));
+
+        $collection = new Collection([42, 1337, 52]);
+        $this->assertSame(52, $collection->median());
+
+        $collection = new Collection([5, 10, 5, 10]);
+        $this->assertSame(7.5, $collection->median());
+
+        $collection = (new Collection());
+        $this->assertNull($collection->median());
+    }
 
     public function testMerge()
     {
@@ -810,10 +806,13 @@ class CollectionMethodsTest extends TestCase
     public function testMin()
     {
         $collection = (new Collection($this->data()));
-        $this->assertEquals(37, $collection->min('age'));
+        $this->assertEquals(7, $collection->min('age'));
 
         $collection = (new Collection([42, 1337, 52]));
         $this->assertEquals(42, $collection->min());
+
+        $collection = (new Collection());
+        $this->assertNull($collection->min());
     }
 
     public function testNth()
