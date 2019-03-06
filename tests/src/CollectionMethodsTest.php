@@ -722,50 +722,22 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame($last, $collection->last());
     }
 
+    public function testMap()
+    {
+        $collection = (new Collection([1, 3, 3, 2,]))->map(function ($value) {
+            return $value + 1;
+        });
+
+        $this->assertSame([2, 4, 4, 3], $collection->toArray());
+    }
+
     public function testMax()
     {
-        $collection = (new Collection($this->data()))
-            ->indexBy('id')
-            ->get();
+        $collection = (new Collection($this->data()));
+        $this->assertEquals(37, $collection->max('age'));
 
-        $oldGuys = [
-            [
-                'id' => 10,
-                'name' => 'Davos Seaworth',
-                'age' => 37,
-            ],
-            [
-                'id' => 16,
-                'name' => 'Davos Seaworth Twin',
-                'age' => 37,
-            ],
-        ];
-        $this->assertEquals(
-            (new Collection($oldGuys, 'id'))->toArray(),
-            $collection->max('age')->toArray()
-        );
-
-        $collection = new Collection($this->data());
-        $oldGuys = [
-            [
-                'id' => 10,
-                'name' => 'Davos Seaworth',
-                'age' => 37,
-            ],
-            [
-                'id' => 16,
-                'name' => 'Davos Seaworth Twin',
-                'age' => 37,
-            ],
-        ];
-        $this->assertEquals(
-            (new Collection($oldGuys))->toArray(),
-            $collection->max('age')->toArray()
-        );
-
-        $this->expectException(EmptyCollection::class);
-        $collection = new Collection([]);
-        $collection->max('id');
+        $collection = (new Collection([42, 1337, 52]));
+        $this->assertEquals(1337, $collection->max());
     }
 
     /**
@@ -837,47 +809,11 @@ class CollectionMethodsTest extends TestCase
 
     public function testMin()
     {
-        $collection = (new Collection($this->data()))->indexBy('id');
+        $collection = (new Collection($this->data()));
+        $this->assertEquals(37, $collection->min('age'));
 
-        $youngster = [
-            [
-                'id' => 6,
-                'name' => 'Brandon Stark',
-                'age' => 7,
-            ],
-            [
-                'id' => 15,
-                'name' => 'Brandon Stark Twin',
-                'age' => 7,
-            ],
-        ];
-        $this->assertEquals(
-            (new Collection($youngster, 'id'))->toArray(),
-            $collection->min('age')->toArray()
-        );
-
-        $collection = new Collection($this->data());
-
-        $youngster = [
-            [
-                'id' => 6,
-                'name' => 'Brandon Stark',
-                'age' => 7,
-            ],
-            [
-                'id' => 15,
-                'name' => 'Brandon Stark Twin',
-                'age' => 7,
-            ],
-        ];
-        $this->assertEquals(
-            (new Collection($youngster))->toArray(),
-            $collection->min('age')->toArray()
-        );
-
-        $this->expectException(EmptyCollection::class);
-        $collection = new Collection([]);
-        $collection->min('id');
+        $collection = (new Collection([42, 1337, 52]));
+        $this->assertEquals(42, $collection->min());
     }
 
     public function testNth()

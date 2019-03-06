@@ -717,48 +717,21 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generator);
     }
 
-    /**
-     * Returns maximal value from this collection.
-     *
-     * @param null $selector
-     * @return mixed
-     */
-    final public function max($selector = null): CollectionInterface
+    final public function max($selector = null)
     {
+        $selector = $this->selector($selector);
+        $collection = $this->items();
+
         $result = null;
 
         foreach ($collection as $value) {
+            $value = $selector($value);
             $result = $value > $result ? $value : $result;
         }
 
         return $result;
     }
 
-    ///**
-    // * Returns the maximum value by a given selector
-    // *
-    // * @param callable|string|int $selector
-    // * @throws EmptyCollection
-    // * @return CollectionInterface
-    // */
-    //final public function max($selector = null): CollectionInterface
-    //{
-    //    if ($this->count() === 0) {
-    //        throw new EmptyCollection("Can't get the maximum value of an empty collection");
-    //    }
-    //
-    //    $selector = $this->getScalarSelector($selector);
-    //
-    //    $result = \array_filter($this->callSelectorWithAllResults($selector));
-    //    $result = \array_keys($result, \max($result));
-    //
-    //    $items = [];
-    //    foreach ($result as $key) {
-    //        $items[] = $this->items[$key];
-    //    }
-    //
-    //    return new static($items, $this->indexByKey);
-    //}
 
     /**
      * Merge another collection into the current collection
@@ -780,18 +753,17 @@ abstract class AbstractCollection implements CollectionInterface
         return new static(\array_merge($this->items, $collection->all()), $this->indexByKey);
     }
 
-    /**
-     * Returns minimal value from this collection.
-     *
-     * @param callable|string|int $selector
-     * @return mixed
-     */
-    final public function min($selector): CollectionInterface
+    final public function min($selector = null): CollectionInterface
     {
+        $selector = $this->selector($selector);
+        $collection = $this->items();
+
         $result = null;
         $hasItem = false;
 
         foreach ($collection as $value) {
+            $value = $selector($value);
+
             if (!$hasItem) {
                 $hasItem = true;
                 $result = $value;
@@ -801,35 +773,7 @@ abstract class AbstractCollection implements CollectionInterface
         }
 
         return $result;
-
-        return \min($this->items());
     }
-
-    ///**
-    // * Returns the minimum value of a given selector
-    // *
-    // * @param callable|string|int $selector
-    // * @throws EmptyCollection
-    // * @return CollectionInterface
-    // */
-    //final public function min($selector): CollectionInterface
-    //{
-    //    if ($this->count() === 0) {
-    //        throw new EmptyCollection("Can't get the minimum value of an empty collection");
-    //    }
-    //
-    //    $selector = $this->getScalarSelector($selector);
-    //
-    //    $result = \array_filter($this->callSelectorWithAllResults($selector));
-    //    $result = \array_keys($result, \min($result));
-    //
-    //    $items = [];
-    //    foreach ($result as $key) {
-    //        $items[] = $this->items[$key];
-    //    }
-    //
-    //    return new static($items, $this->indexByKey);
-    //}
 
     /**
      * Returns a lazy collection of items associated to any of the keys from $keys.
