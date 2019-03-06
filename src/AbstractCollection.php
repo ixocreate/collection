@@ -241,7 +241,7 @@ abstract class AbstractCollection implements CollectionInterface
          */
         if ($this->strictUniqueKeys) {
             $key = $this->input->key();
-            if (\in_array($key, $this->usedKeys)) {
+            if (\in_array($key, $this->usedKeys, true)) {
                 throw new DuplicateKey();
             }
             $this->usedKeys[] = $key;
@@ -386,14 +386,11 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $valuesToCompare = (clone $this)->input([])
-            ->concat($compare)
-            ->values()
-            ->toArray();
+        $valuesToCompare = (new Collection($compare))->values()->toArray();
 
         $generator = function () use ($collection, $valuesToCompare) {
             foreach ($collection as $key => $value) {
-                if (!\in_array($value, $valuesToCompare)) {
+                if (!\in_array($value, $valuesToCompare, true)) {
                     yield $key => $value;
                 }
             }
@@ -454,7 +451,7 @@ abstract class AbstractCollection implements CollectionInterface
         $collection = $this->items();
 
         return $collection->reject(function ($value, $key) use ($keys) {
-            return \in_array($key, $keys);
+            return \in_array($key, $keys, true);
         });
     }
 
@@ -609,7 +606,10 @@ abstract class AbstractCollection implements CollectionInterface
         $collection = $this->items();
 
         $generator = function () use ($collection, $selector) {
-            foreach ($collection as $key => $value) {
+            /**
+             * Iterate over values to not trigger a DuplicateKey exception while re-indexing.
+             */
+            foreach ($collection->values() as $key => $value) {
                 yield $selector($value, $key) ?? $key => $value;
             }
         };
@@ -621,11 +621,11 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        $valuesToCompare = (new Collection())->concat($compare)->values()->toArray();
+        $valuesToCompare = (new Collection($compare))->values()->toArray();
 
         $generator = function () use ($collection, $valuesToCompare) {
             foreach ($collection as $key => $value) {
-                if (\in_array($value, $valuesToCompare)) {
+                if (\in_array($value, $valuesToCompare, true)) {
                     yield $key => $value;
                 }
             }
@@ -714,7 +714,7 @@ abstract class AbstractCollection implements CollectionInterface
             return null;
         }
 
-        $middle = (int) ($count / 2);
+        $middle = (int)($count / 2);
         if ($count % 2) {
             return $values->get($middle);
         }
@@ -758,24 +758,13 @@ abstract class AbstractCollection implements CollectionInterface
         return $result;
     }
 
-    /**
-     * Returns a lazy collection of items associated to any of the keys from $keys.
-     *
-     * @param iterable $keys
-     * @return CollectionInterface
-     */
-    final public function only(iterable $keys)
+    final public function only(iterable $keys): CollectionInterface
     {
-        $keys = toArray(values($keys));
-
-        return filter(
-            $collection,
-            function ($value, $key) use ($keys) {
-                return \in_array($key, $keys, true);
-            }
-        );
-
-        return only($this->items(), $keys);
+        $collection = $this->items();
+        $keys = (new Collection($keys))->values()->toArray();
+        return $collection->filter(function ($value, $key) use ($keys) {
+            return \in_array($key, $keys, true);
+        });
     }
 
     ///**
@@ -891,30 +880,24 @@ abstract class AbstractCollection implements CollectionInterface
         return $this->unshift($value);
     }
 
-    /**
-     * Removes and returns all items filtered by a given callable
-     *
-     * @param callable $callable
-     * @return CollectionInterface
-     */
-    final public function pull(callable $callable): CollectionInterface
-    {
-        $filteredItems = [];
-        $items = [];
-
-        foreach ($this->items as $key => $value) {
-            if ($callable($value, $key) === true) {
-                $filteredItems[] = $value;
-                continue;
-            }
-
-            $items[] = $value;
-        }
-
-        $this->items = $items;
-
-        return new static($filteredItems, $this->indexByKey);
-    }
+    //final public function pull(callable $callable): CollectionInterface
+    //{
+    //    $filteredItems = [];
+    //    $items = [];
+    //
+    //    foreach ($this->items as $key => $value) {
+    //        if ($callable($value, $key) === true) {
+    //            $filteredItems[] = $value;
+    //            continue;
+    //        }
+    //
+    //        $items[] = $value;
+    //    }
+    //
+    //    $this->items = $items;
+    //
+    //    return new static($filteredItems, $this->indexByKey);
+    //}
 
     final public function push($value, $key = null): CollectionInterface
     {
@@ -925,7 +908,7 @@ abstract class AbstractCollection implements CollectionInterface
                 yield $k => $v;
             }
 
-            if($key !== null) {
+            if ($key !== null) {
                 yield $key => $value;
             } else {
                 yield $value;
@@ -948,8 +931,8 @@ abstract class AbstractCollection implements CollectionInterface
                 }
             }
 
-            if(!$collection->has($key)) {
-                if($key !== null) {
+            if (!$collection->has($key)) {
+                if ($key !== null) {
                     yield $key => $value;
                 } else {
                     yield $value;
@@ -962,39 +945,25 @@ abstract class AbstractCollection implements CollectionInterface
 
     final public function random(int $number = 1): CollectionInterface
     {
-        \mt_srand();
-        $randomKey = \mt_rand(0, $this->count() - 1);
+        $randomKeys = \array_rand($this->keys()->flip()->toArray(), $number);
 
-        return $this->get($this->keys()->get($randomKey));
+        if ($number <= 1) {
+            $randomKeys = [$randomKeys];
+        }
+
+        return $this->items()->only($randomKeys);
     }
 
-    ///**
-    // * Returns one random collection item
-    // *
-    // * @return Collection|mixed
-    // */
-    //final public function randomOne()
-    //{
-    //    return $this->random(1)->first();
-    //}
-
-    final public function reduce(callable $callable, $initial = null)
+    final public function reduce(callable $callable, $initial)
     {
+        $carry = $initial;
+
         $collection = $this->items();
-
-        //return \array_reduce($this->items, $callable);
-
-        $carry = (clone $this)->input($initial);
-
         foreach ($collection as $key => $value) {
             $carry = $callable($carry, $value, $key);
         }
 
-        return (clone $this)->input($carry);
-
-        $result = reduce($this->items(), $callable, $initial);
-
-        return ($convertToCollection && isCollection($result)) ? new Collection($result) : $result;
+        return is_iterable($carry) ? (clone $this)->input($carry) : $carry;
     }
 
     ///**
@@ -1088,11 +1057,6 @@ abstract class AbstractCollection implements CollectionInterface
     //    return replaceByKeys($this->items(), $replacementMap);
     //}
 
-    /**
-     * Returns collection of items in this collection in reverse order.
-     *
-     * @return CollectionInterface
-     */
     final public function reverse(): CollectionInterface
     {
         $collection = $this->items();
@@ -1109,67 +1073,20 @@ abstract class AbstractCollection implements CollectionInterface
                 })->map(function ($item) {
                     return $item[1];
                 });
-
-            //return map(
-            //    indexBy(
-            //        \array_reverse($array),
-            //        function ($item) {
-            //            return $item[0];
-            //        }
-            //    ),
-            //    function ($item) {
-            //        return $item[1];
-            //    }
-            //);
         };
 
         return (clone $this)->input($generator);
     }
 
-    ///**
-    // * Returns a collection in reverse order
-    // *
-    // * @return CollectionInterface
-    // */
-    //final public function reverse(): CollectionInterface
+    //final public function shift()
     //{
-    //    $items = \array_reverse($this->items);
-    //    return new static($items, $this->indexByKey);
+    //    $shift = \array_shift($this->items);
+    //    return $shift;
     //}
 
-    ///**
-    // * Returns the second item in this collection or throws ItemNotFound if the collection is empty or has 1 item.
-    // *
-    // * @throws ItemNotFound
-    // * @return mixed
-    // */
-    //final public function second()
-    //{
-    //    return get(values($collection), 1);
-    //
-    //    $result = second($this->items());
-    //
-    //    return ($convertToCollection && isCollection($result)) ? new Collection($result) : $result;
-    //}
-
-    /**
-     * Removes and returns the first collection item
-     *
-     * @return mixed
-     */
-    final public function shift()
-    {
-        $shift = \array_shift($this->items);
-        return $shift;
-    }
-
-    /**
-     * Returns a non-collection of shuffled items from this collection
-     *
-     * @return CollectionInterface
-     */
     final public function shuffle(): CollectionInterface
     {
+        $collection = $this->items();
         $buffer = [];
         foreach ($collection as $key => $value) {
             $buffer[] = [$key, $value];
@@ -1177,9 +1094,7 @@ abstract class AbstractCollection implements CollectionInterface
 
         \shuffle($buffer);
 
-        return dereferenceKeyValue($buffer);
-
-        return \shuffle($this->items());
+        return $this->dereferenceKeyValue($buffer);
     }
 
     ///**
@@ -1198,31 +1113,25 @@ abstract class AbstractCollection implements CollectionInterface
     //    return new static($items, $this->indexByKey);
     //}
 
-    /**
-     * Returns lazy collection items of which are part of the original collection from item number $from to item
-     * number $to. The items before $from are also iterated over, just not returned.
-     *
-     * @param int $from
-     * @param int $length If omitted, will slice until end
-     * @return CollectionInterface
-     */
-    final public function slice(int $from, int $length = null): CollectionInterface
+    final public function slice(int $offset, int $length = null): CollectionInterface
     {
         // return new static(\array_slice($this->items, $offset, $length), $this->indexByKey);
 
         $collection = $this->items();
 
-        $generator = function () use ($collection, $from, $to) {
-            //    $index = 0;
-            //    foreach ($collection as $key => $value) {
-            //        if ($index >= $from && ($index < $to || $to == -1)) {
-            //            yield $key => $value;
-            //        } elseif ($index >= $to && $to >= 0) {
-            //            break;
-            //        }
-            //
-            //        $index++;
-            //    }
+        $generator = function () use ($collection, $offset, $length) {
+            $index = 0;
+            $from = $offset >= 0 ? $offset : $collection->count() + $offset;
+            $to = $length > 0 ? $offset + $length : $collection->count() + $length;
+            foreach ($collection as $key => $value) {
+                if ($index >= $from && $index < $to) {
+                    yield $key => $value;
+                } elseif ($index >= $to && $to >= 0) {
+                    break;
+                }
+
+                $index++;
+            }
         };
 
         return (clone $this)->input($generator);
@@ -1330,7 +1239,7 @@ abstract class AbstractCollection implements CollectionInterface
         $generator = function () use ($collection, $step, $offset) {
             $index = 0;
             foreach ($collection as $key => $value) {
-                if ($index % $step == 0) {
+                if ($index % $step == $offset) {
                     yield $key => $value;
                 }
 
@@ -1381,21 +1290,18 @@ abstract class AbstractCollection implements CollectionInterface
             throw new InvalidArgument('Can only transpose collections of collections');
         }
 
-        return (clone $this)->input();
+        $collections = ($collection->map(function (CollectionInterface $collection) {
+            return $collection->toArray();
+        })->toArray());
 
-        return Collection::from(
-            \array_map(
-                function (...$items) {
-                    return new Collection($items);
-                },
-                ...toArray(
-                    map(
-                        $collection,
-                        'toArray'
-                    )
-                )
-            )
+        $transposed = \array_map(
+            function (...$items) {
+                return new Collection($items);
+            },
+            ...$collections
         );
+
+        return (clone $this)->input($transposed);
     }
 
     final public function unshift($value, $key = null): CollectionInterface
@@ -1428,47 +1334,5 @@ abstract class AbstractCollection implements CollectionInterface
         };
 
         return (clone $this)->input($generator);
-    }
-
-    final public function zip(iterable $values): CollectionInterface
-    {
-        /* @var Iterator[] $iterators */
-        $iterators = \array_map(
-            function ($collection) {
-                $it = new IteratorIterator(new Collection($collection));
-                $it->rewind();
-                return $it;
-            },
-            $values
-        );
-
-        $generator = function () use ($iterators) {
-            while (true) {
-                $isMissingItems = false;
-                $zippedItem = new Collection([]);
-
-                foreach ($iterators as $it) {
-                    if (!$it->valid()) {
-                        $isMissingItems = true;
-                        break;
-                    }
-
-                    $zippedItem = append($zippedItem, $it->current(), $it->key());
-                    $it->next();
-                }
-
-                if (!$isMissingItems) {
-                    yield $zippedItem;
-                } else {
-                    break;
-                }
-            }
-        };
-
-        return (clone $this)->input($generator);
-
-        \array_unshift($collections, $this->items());
-
-        return zip(...$collections);
     }
 }

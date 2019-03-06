@@ -48,15 +48,18 @@ class CollectionCollectionTest extends TestCase
         ];
     }
 
+    public function testCollection()
+    {
+        $collection = new CollectionCollection($this->data);
+        $this->assertCount(2, $collection);
+
+        $collection = new CollectionCollection($this->data);
+        $this->assertSame($this->data, $collection->toArray());
+    }
+
     public function testInvalidTypeException()
     {
         $this->expectException(InvalidType::class);
         (new CollectionCollection([['id' => 1]]))->toArray();
-    }
-
-    public function testToArray()
-    {
-        $collection = new CollectionCollection($this->data);
-        $this->assertSame($this->data, $collection->toArray());
     }
 }

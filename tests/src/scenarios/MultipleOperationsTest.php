@@ -34,6 +34,7 @@ class MultipleOperationsTest extends TestCase
                 return [$i, $i + 1];
             })
             ->flatten()
+            ->values()
             ->sort(function ($a, $b) {
                 return $a > $b;
             })

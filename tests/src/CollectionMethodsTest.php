@@ -11,9 +11,7 @@ namespace IxocreateTest\Collection;
 
 use Ixocreate\Collection\Collection;
 use Ixocreate\Collection\Exception\DuplicateKey;
-use Ixocreate\Collection\Exception\InvalidCollection;
 use Ixocreate\Collection\Exception\InvalidReturnValue;
-use Ixocreate\Collection\Exception\InvalidType;
 use Ixocreate\Contract\Collection\CollectionInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -844,58 +842,66 @@ class CollectionMethodsTest extends TestCase
         $this->assertNull($collection->min());
     }
 
-    public function testPop()
+    public function testOnly()
     {
-        $collection = new Collection($this->data());
-
         $data = $this->data();
-        $last = \array_pop($data);
-
-        $this->assertSame($last, $collection->pop());
-        $this->assertSame($data, $collection->toArray());
-
-        $collection = (new Collection($this->data()))->indexBy('id');
-
-        $data = $this->data();
-        $last = \array_pop($data);
-        $newData = [];
-        foreach ($data as $item) {
-            $newData[$item['id']] = $item;
-        }
-
-        $this->assertSame($last, $collection->pop());
-        $this->assertSame($newData, $collection->toArray());
+        $expected = [0 => $data[0], 3 => $data[3], 5 => $data[5]];
+        $collection = (new Collection($data));
+        $this->assertEquals($expected, $collection->only([0, 3, 5])->toArray());
     }
 
-    public function testPull()
-    {
-        $collection = new Collection($this->data());
-        $pulledCollection = $collection->pull(function ($item) {
-            return $item['id'] == 1;
-        });
+    //public function testPop()
+    //{
+    //    $collection = new Collection($this->data());
+    //
+    //    $data = $this->data();
+    //    $last = \array_pop($data);
+    //
+    //    $this->assertSame($last, $collection->pop());
+    //    $this->assertSame($data, $collection->toArray());
+    //
+    //    $collection = (new Collection($this->data()))->indexBy('id');
+    //
+    //    $data = $this->data();
+    //    $last = \array_pop($data);
+    //    $newData = [];
+    //    foreach ($data as $item) {
+    //        $newData[$item['id']] = $item;
+    //    }
+    //
+    //    $this->assertSame($last, $collection->pop());
+    //    $this->assertSame($newData, $collection->toArray());
+    //}
 
-        $data = $this->data();
-        $first = \array_shift($data);
-
-        $this->assertSame($data, $collection->toArray());
-        $this->assertSame([$first], $pulledCollection->toArray());
-
-
-        $collection = (new Collection($this->data()))->indexBy('id');
-        $pulledCollection = $collection->pull(function ($item) {
-            return $item['id'] == 1;
-        });
-
-        $data = $this->data();
-        $first = \array_shift($data);
-        $newData = [];
-        foreach ($data as $item) {
-            $newData[$item['id']] = $item;
-        }
-
-        $this->assertSame($newData, $collection->toArray());
-        $this->assertSame([1 => $first], $pulledCollection->toArray());
-    }
+    //public function testPull()
+    //{
+    //    $collection = new Collection($this->data());
+    //    $pulledCollection = $collection->pull(function ($item) {
+    //        return $item['id'] == 1;
+    //    });
+    //
+    //    $data = $this->data();
+    //    $first = \array_shift($data);
+    //
+    //    $this->assertSame($data, $collection->toArray());
+    //    $this->assertSame([$first], $pulledCollection->toArray());
+    //
+    //
+    //    $collection = (new Collection($this->data()))->indexBy('id');
+    //    $pulledCollection = $collection->pull(function ($item) {
+    //        return $item['id'] == 1;
+    //    });
+    //
+    //    $data = $this->data();
+    //    $first = \array_shift($data);
+    //    $newData = [];
+    //    foreach ($data as $item) {
+    //        $newData[$item['id']] = $item;
+    //    }
+    //
+    //    $this->assertSame($newData, $collection->toArray());
+    //    $this->assertSame([1 => $first], $pulledCollection->toArray());
+    //}
 
     public function testPush()
     {
@@ -973,7 +979,8 @@ class CollectionMethodsTest extends TestCase
     public function testRandom()
     {
         $collection = (new Collection($this->data()))->indexBy('id');
-        $this->assertSame(['id', 'name', 'age'], \array_keys($collection->random()));
+        $randomItem = $collection->random()->first();
+        $this->assertSame(['id', 'name', 'age'], \array_keys($randomItem));
 
         $oneItem = [
             [
@@ -983,18 +990,23 @@ class CollectionMethodsTest extends TestCase
             ],
         ];
         $collection = new Collection($oneItem, 'id');
-        $this->assertSame(\current($oneItem), $collection->random());
+        $this->assertSame(\current($oneItem), $collection->random()->first());
     }
 
     public function testReduce()
     {
-        $collection = new Collection($this->data());
+        $collection = new Collection($this->data(), 'id');
 
-        $sumAge = $collection->reduce(function ($carry, $item) {
-            return $carry + $item['age'];
+        $expected = $collection->sum('age') + $collection->sum('id');
+
+        /**
+         * reduce to sum of all ages and sum of numeric index value
+         */
+        $reduced = $collection->reduce(function ($carry, $item, $key) {
+            return $carry + $item['age'] + $key;
         }, 0);
 
-        $this->assertSame((float)$sumAge, $collection->sum('age'));
+        $this->assertSame($expected, $reduced);
     }
 
     public function testReverse()
@@ -1005,36 +1017,36 @@ class CollectionMethodsTest extends TestCase
         $collection = new Collection($data);
         $this->assertSame($expected, $collection->reverse()->toArray());
 
-        //$data = [];
-        //foreach ($this->data() as $array) {
-        //    $data[$array['id']] = $array;
-        //}
-        //$collection = (new Collection($this->data()))->indexBy('id');
-        //$this->assertSame(\array_reverse($data, true), $collection->reverse()->toArray());
-    }
-
-    public function testShift()
-    {
-        $collection = new Collection($this->data());
-
-        $data = $this->data();
-        $first = \array_shift($data);
-
-        $this->assertSame($first, $collection->shift());
-        $this->assertSame($data, $collection->toArray());
-
-        $collection = (new Collection($this->data()))->indexBy('id');
-
-        $data = $this->data();
-        $first = \array_shift($data);
-        $newData = [];
-        foreach ($data as $item) {
-            $newData[$item['id']] = $item;
+        $data = [];
+        foreach ($this->data() as $array) {
+            $data[$array['id']] = $array;
         }
-
-        $this->assertSame($first, $collection->shift());
-        $this->assertSame($newData, $collection->toArray());
+        $collection = (new Collection($this->data()))->indexBy('id');
+        $this->assertSame(\array_reverse($data, true), $collection->reverse()->toArray());
     }
+
+    //public function testShift()
+    //{
+    //    $collection = new Collection($this->data());
+    //
+    //    $data = $this->data();
+    //    $first = \array_shift($data);
+    //
+    //    $this->assertSame($first, $collection->shift());
+    //    $this->assertSame($data, $collection->toArray());
+    //
+    //    $collection = (new Collection($this->data()))->indexBy('id');
+    //
+    //    $data = $this->data();
+    //    $first = \array_shift($data);
+    //    $newData = [];
+    //    foreach ($data as $item) {
+    //        $newData[$item['id']] = $item;
+    //    }
+    //
+    //    $this->assertSame($first, $collection->shift());
+    //    $this->assertSame($newData, $collection->toArray());
+    //}
 
     public function testShuffle()
     {
@@ -1077,7 +1089,7 @@ class CollectionMethodsTest extends TestCase
                     'age' => 37,
                 ],
             ],
-            $collection->slice(15)->toArray()
+            $collection->slice(15)->values()->toArray()
         );
 
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -1102,7 +1114,7 @@ class CollectionMethodsTest extends TestCase
                     'age' => 37,
                 ],
             ],
-            $collection->slice(-1)->toArray()
+            $collection->slice(-1)->values()->toArray()
         );
 
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -1126,7 +1138,7 @@ class CollectionMethodsTest extends TestCase
                     'age' => 33,
                 ],
             ],
-            $collection->slice(1, 1)->toArray()
+            $collection->slice(1, 1)->values()->toArray()
         );
 
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -1150,7 +1162,7 @@ class CollectionMethodsTest extends TestCase
                     'age' => 7,
                 ],
             ],
-            $collection->slice(14, -1)->toArray()
+            $collection->slice(14, -1)->values()->toArray()
         );
 
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -1174,7 +1186,7 @@ class CollectionMethodsTest extends TestCase
                     'age' => 7,
                 ],
             ],
-            $collection->slice(-2, -1)->toArray()
+            $collection->slice(-2, -1)->values()->toArray()
         );
 
         $collection = (new Collection($this->data()))->indexBy('id');
@@ -1197,28 +1209,39 @@ class CollectionMethodsTest extends TestCase
             return $item1['age'] - $item2['age'];
         });
 
+        /**
+         * preserve index (uasort)
+         */
+        $data = $this->data();
+        \uasort($data, function ($item1, $item2) {
+            return $item1['age'] - $item2['age'];
+        });
+        $this->assertSame($data, $collection->toArray());
+
+        /**
+         * do not preserve index (usort)
+         */
         $data = $this->data();
         \usort($data, function ($item1, $item2) {
             return $item1['age'] - $item2['age'];
         });
+        $this->assertSame($data, $collection->values()->toArray());
 
-        $this->assertSame($data, $collection->toArray());
-
-
+        /**
+         * indexed
+         */
         $collection = (new Collection($this->data()))->indexBy('id');
         $collection = $collection->sort(function ($item1, $item2) {
             return $item1['age'] - $item2['age'];
         });
-
         $data = $this->data();
-        \usort($data, function ($item1, $item2) {
+        \uasort($data, function ($item1, $item2) {
             return $item1['age'] - $item2['age'];
         });
         $newData = [];
         foreach ($data as $item) {
             $newData[$item['id']] = $item;
         }
-
         $this->assertSame($newData, $collection->toArray());
     }
 
@@ -1347,10 +1370,10 @@ class CollectionMethodsTest extends TestCase
             $items[] = $this->data()[$i];
         }
 
-        $this->assertSame($items, $collection->toArray());
+        $this->assertSame($items, $collection->values()->toArray());
 
         $collection = new Collection($this->data());
-        $collection = $collection->nth(3, 1);
+        $collection = $collection->takeNth(3, 1);
 
         $items = [];
         for ($i = 0; $i < \count($this->data()); $i++) {
@@ -1360,10 +1383,10 @@ class CollectionMethodsTest extends TestCase
             $items[] = $this->data()[$i];
         }
 
-        $this->assertSame($items, $collection->toArray());
+        $this->assertSame($items, $collection->values()->toArray());
 
         $collection = (new Collection($this->data()))->indexBy('id');
-        $collection = $collection->nth(4, 1);
+        $collection = $collection->takeNth(4, 1);
 
         $items = [];
         for ($i = 0; $i < \count($this->data()); $i++) {
@@ -1376,6 +1399,91 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame($items, $collection->toArray());
     }
 
+    /**
+     * Example of implementing a transpose function and how to apply it over a collection.
+     *
+     * For more on how this can be useful: http://adamwathan.me/2016/04/06/cleaning-up-form-input-with-transpose/
+     */
+    public function testTransform()
+    {
+        $formData = [
+            'names' => [
+                'Jane',
+                'Bob',
+                'Mary',
+            ],
+            'emails' => [
+                'jane@example.com',
+                'bob@example.com',
+                'mary@example.com',
+            ],
+            'occupations' => [
+                'Doctor',
+                'Plumber',
+                'Dentist',
+            ],
+        ];
+
+        $transpose = function (Collection $collections) {
+            $transposed = \array_map(
+                function (...$items) {
+                    return $items;
+                },
+                ...$collections->values()->toArray()
+            );
+
+            return new Collection($transposed);
+        };
+
+        $result = (new Collection($formData))
+            ->transform($transpose)
+            ->toArray();
+
+        $expected = [
+            [
+                'Jane',
+                'jane@example.com',
+                'Doctor',
+            ],
+            [
+                'Bob',
+                'bob@example.com',
+                'Plumber',
+            ],
+            [
+                'Mary',
+                'mary@example.com',
+                'Dentist',
+            ],
+        ];
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @see testTransform() but with implicit transpose() call
+     */
+    public function testTranspose()
+    {
+        $data = [
+            new Collection([1, 2, 3]),
+            new Collection([4, 5, new Collection(['foo', 'bar'])]),
+            new Collection([7, 8, 9]),
+        ];
+
+        $result = (new Collection($data))
+            ->transpose()
+            ->toArray();
+
+        $expected = [
+            new Collection([1, 4, 7]),
+            new Collection([2, 5, 8]),
+            new Collection([3, new Collection(['foo', 'bar']), 9]),
+        ];
+
+        $this->assertEquals($expected, $result);
+    }
+
     public function testUnshift()
     {
         $add = [
@@ -1385,7 +1493,6 @@ class CollectionMethodsTest extends TestCase
         ];
         $data = $this->data();
         \array_unshift($data, $add);
-
         $collection = (new Collection($this->data()))->unshift($add)->values();
         $this->assertSame($data, $collection->toArray());
 
@@ -1394,19 +1501,23 @@ class CollectionMethodsTest extends TestCase
             'name' => 'Someone else',
             'age' => 33,
         ];
-        $collection = new Collection($this->data(), "id");
-        $collection->unshift($add);
         $data = $this->data();
         \array_unshift($data, $add);
-        $newData = [];
+        $collection = (new Collection($this->data()))->unshift($add, 256)->values();
+        $this->assertSame($data, $collection->toArray());
+
+        $add = [
+            'id' => 256,
+            'name' => 'Someone else',
+            'age' => 33,
+        ];
+        $data = $this->data();
+        \array_unshift($data, $add);
         foreach ($data as $item) {
             $newData[$item['id']] = $item;
         }
+        $collection = (new Collection($this->data(), 'name'))->unshift($add)->indexBy('id');
         $this->assertSame($newData, $collection->toArray());
-
-        $this->expectException(InvalidType::class);
-        $collection = new Collection($this->data(), "id");
-        $collection->unshift(false);
     }
 
     public function testValues()

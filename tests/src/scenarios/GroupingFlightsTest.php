@@ -67,7 +67,7 @@ class GroupingFlightsTest extends TestCase
             ->filter(function ($f) {
                 return $f['cancelled'];
             })
-            ->size();
+            ->count();
 
         $totalDelay = $flights
             ->reject(function ($f) {
@@ -81,7 +81,7 @@ class GroupingFlightsTest extends TestCase
             );
 
         return [
-            'numFlights' => $flights->size(),
+            'numFlights' => $flights->count(),
             'numCancellations' => $numCancellations,
             'totalDelay' => $totalDelay,
         ];
