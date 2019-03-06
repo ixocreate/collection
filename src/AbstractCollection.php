@@ -318,48 +318,16 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($chunks);
     }
 
-    ///**
-    // * Combines the values of this collection as keys, with values of $collection as values.
-    // * The resulting collection has length equal to the size of smaller collection.
-    // *
-    // * @param array|\Traversable $collection
-    // * @return CollectionInterface
-    // * @throws ItemNotFound
-    // */
-    //final public function combine($collection): CollectionInterface
-    //{
-    //    $generator = function () use ($keys, $values) {
-    //        $keyCollection = new Collection($keys);
-    //        $valueIt = new IteratorIterator(new Collection($values));
-    //        $valueIt->rewind();
-    //
-    //        foreach ($keyCollection as $key) {
-    //            if (!$valueIt->valid()) {
-    //                break;
-    //            }
-    //
-    //            yield $key => $valueIt->current();
-    //            $valueIt->next();
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generator);
-    //
-    //    return combine($this->items(), $collection);
-    //}
-
-    final public function concat(...$collections): CollectionInterface
+    final public function concat(iterable $pushItems): CollectionInterface
     {
         $collection = $this->items();
 
-        $generator = function () use ($collection, $collections) {
-            foreach ($collection as $k => $v) {
-                yield $k => $v;
+        $generator = function () use ($collection, $pushItems) {
+            foreach ($collection->values() as $value) {
+                yield $value;
             }
-            foreach ($collections as $collection) {
-                foreach ($collection as $key => $value) {
-                    yield $key => $value;
-                }
+            foreach ($pushItems as $value) {
+                yield $value;
             }
         };
 
@@ -414,12 +382,12 @@ abstract class AbstractCollection implements CollectionInterface
             });
     }
 
-    final public function diff(...$collections): CollectionInterface
+    final public function diff(iterable $compare): CollectionInterface
     {
         $collection = $this->items();
 
         $valuesToCompare = (clone $this)->input([])
-            ->concat(...$collections)
+            ->concat($compare)
             ->values()
             ->toArray();
 
@@ -480,7 +448,7 @@ abstract class AbstractCollection implements CollectionInterface
         return true;
     }
 
-    final public function except($keys): CollectionInterface
+    final public function except(iterable $keys): CollectionInterface
     {
         $keys = (new Collection($keys))->values()->toArray();
         $collection = $this->items();
@@ -649,11 +617,11 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generator);
     }
 
-    final public function intersect(...$collections): CollectionInterface
+    final public function intersect(iterable $compare): CollectionInterface
     {
         $collection = $this->items();
 
-        $valuesToCompare = (new Collection())->concat(...$collections)->values()->toArray();
+        $valuesToCompare = (new Collection())->concat($compare)->values()->toArray();
 
         $generator = function () use ($collection, $valuesToCompare) {
             foreach ($collection as $key => $value) {
@@ -754,24 +722,15 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input([$values->get($middle - 1), $values->get($middle)])->avg();
     }
 
-    /**
-     * Merge another collection into the current collection
-     *
-     * @param CollectionInterface $collection
-     * @return CollectionInterface
-     */
-    final public function merge(CollectionInterface $collection): CollectionInterface
+    final public function merge(iterable $items): CollectionInterface
     {
-        //if (!$collection instanceof $this) {
-        //    throw new InvalidCollectionException(
-        //        \sprintf(
-        //            "'collection' must be a '%s', '%s' given",
-        //            \get_class($this),
-        //            \get_class($collection)
-        //        )
-        //    );
-        //}
-        return new static(\array_merge($this->items, $collection->all()), $this->indexByKey);
+        $collection = $this->items();
+
+        foreach ($items as $key => $value) {
+            $collection = $collection->put($value, \is_string($key) ? $key : null);
+        }
+
+        return (clone $this)->input($collection);
     }
 
     final public function min($selector = null)
@@ -799,10 +758,10 @@ abstract class AbstractCollection implements CollectionInterface
     /**
      * Returns a lazy collection of items associated to any of the keys from $keys.
      *
-     * @param array|\Traversable $keys
+     * @param iterable $keys
      * @return CollectionInterface
      */
-    final public function only($keys)
+    final public function only(iterable $keys)
     {
         $keys = toArray(values($keys));
 
@@ -825,10 +784,10 @@ abstract class AbstractCollection implements CollectionInterface
     // *
     // * @param int $numberOfItems
     // * @param int $step
-    // * @param array|\Traversable $padding
+    // * @param iterable $padding
     // * @return CollectionInterface
     // */
-    //final public function partition($numberOfItems, $step = 0, $padding = [])
+    //final public function partition($numberOfItems, $step = 0, iterable $padding = [])
     //{
     //    $generator = function () use ($collection, $numberOfItems, $step, $padding) {
     //        $buffer = [];
@@ -963,23 +922,42 @@ abstract class AbstractCollection implements CollectionInterface
                 yield $k => $v;
             }
 
-            if ($key === null) {
-                yield $value;
-            } else {
+            if($key !== null) {
                 yield $key => $value;
+            } else {
+                yield $value;
             }
         };
 
         return (clone $this)->input($generator);
     }
 
-    /**
-     * Returns one or more random collection items
-     *
-     * @param int|null $number Specifies how many random keys to return
-     * @return CollectionInterface
-     */
-    final public function random(int $number = 1)
+    final public function put($value, $key): CollectionInterface
+    {
+        $collection = $this->items();
+
+        $generator = function () use ($collection, $value, $key) {
+            foreach ($collection as $k => $v) {
+                if ($key !== null && $k === $key) {
+                    yield $key => $value;
+                } else {
+                    yield $k => $v;
+                }
+            }
+
+            if(!$collection->has($key)) {
+                if($key !== null) {
+                    yield $key => $value;
+                } else {
+                    yield $value;
+                }
+            }
+        };
+
+        return (clone $this)->input($generator);
+    }
+
+    final public function random(int $number = 1): CollectionInterface
     {
         \mt_srand();
         $randomKey = \mt_rand(0, $this->count() - 1);
@@ -1069,10 +1047,10 @@ abstract class AbstractCollection implements CollectionInterface
     // * Returns a lazy collection with items from this collection but values that are found in keys of $replacementMap
     // * are replaced by their values.
     // *
-    // * @param array|\Traversable $replacementMap
+    // * @param iterable $replacementMap
     // * @return CollectionInterface
     // */
-    //final public function replace($replacementMap)
+    //final public function replace(iterable $replacementMap)
     //{
     //    $generator = function () use ($collection, $replacementMap) {
     //        foreach ($collection as $key => $value) {
@@ -1090,10 +1068,10 @@ abstract class AbstractCollection implements CollectionInterface
     // * Returns a lazy collection with items from $collection, but items with keys that are found in keys of
     // * $replacementMap are replaced by their values.
     // *
-    // * @param array|\Traversable $replacementMap
+    // * @param iterable $replacementMap
     // * @return CollectionInterface
     // */
-    //final public function replaceByKeys($replacementMap)
+    //final public function replaceByKeys(iterable $replacementMap)
     //{
     //    $generator = function () use ($collection, $replacementMap) {
     //        foreach ($collection as $key => $value) {
@@ -1449,7 +1427,7 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generator);
     }
 
-    final public function zip(...$collections): CollectionInterface
+    final public function zip(iterable $values): CollectionInterface
     {
         /* @var Iterator[] $iterators */
         $iterators = \array_map(
@@ -1458,7 +1436,7 @@ abstract class AbstractCollection implements CollectionInterface
                 $it->rewind();
                 return $it;
             },
-            $collections
+            $values
         );
 
         $generator = function () use ($iterators) {

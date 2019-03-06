@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace IxocreateTest\Collection;
 
 use Ixocreate\Collection\Collection;
-use Ixocreate\Collection\CollectionCollection;
 use Ixocreate\Collection\Exception\DuplicateKey;
 use Ixocreate\Collection\Exception\InvalidCollection;
 use Ixocreate\Collection\Exception\InvalidReturnValue;
@@ -137,13 +136,18 @@ class CollectionMethodsTest extends TestCase
     public function testConcat()
     {
         $collection = new Collection([1, 3, 3, 2]);
+        $collection = $collection->concat([4, 5]);
 
-        $collection = $collection
-            ->strictUniqueKeys(false)
-            ->concat([4, 5]);
+        $this->assertSame(6, $collection->count());
+        $this->assertSame([1, 3, 3, 2, 4, 5], $collection->toArray());
 
-        $this->assertSame(6, $collection->values()->count());
-        $this->assertSame([4, 5, 3, 2], $collection->toArray());
+        $collection = new Collection(['John Doe']);
+        $collection = $collection->concat(['Jane Doe'])->concat(['name' => 'Johnny Doe']);
+        $this->assertSame(['John Doe', 'Jane Doe', 'Johnny Doe'], $collection->toArray());
+
+        $collection = new Collection(['name' => 'John Doe']);
+        $collection = $collection->concat(['Jane Doe'])->concat(['name' => 'Johnny Doe']);
+        $this->assertSame(['John Doe', 'Jane Doe', 'Johnny Doe'], $collection->toArray());
     }
 
     public function testContains()
@@ -540,7 +544,8 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) implements \ArrayAccess {
+            $data[] = new class($entry) implements \ArrayAccess
+            {
                 private $data;
 
                 public function __construct(array $data)
@@ -588,7 +593,8 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) {
+            $data[] = new class($entry)
+            {
                 private $data;
 
                 public function __construct(array $data)
@@ -618,7 +624,8 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) {
+            $data[] = new class($entry)
+            {
                 public $id;
 
                 public $name;
@@ -760,47 +767,69 @@ class CollectionMethodsTest extends TestCase
 
     public function testMerge()
     {
-        $newData = [
+        /**
+         * integer keys get appended
+         */
+        $new = [
             [
-                'id' => 256,
                 'name' => 'Someone else',
-                'age' => 33,
             ],
         ];
-        $collection1 = new Collection($this->data());
-        $collection2 = new Collection($newData);
+        $expected = \array_merge($this->data(), $new);
 
-        $collection = $collection1->merge($collection2);
+        /**
+         * merge with Collection
+         */
+        $collection = (new Collection($this->data()))->merge(new Collection($new));
+        $this->assertSame($expected, $collection->toArray());
 
-        $this->assertSame(
-            \array_merge($this->data(), $newData),
-            $collection->toArray()
-        );
+        /**
+         * merge with array
+         */
+        $collection = (new Collection($this->data()))->merge($new);
+        $this->assertSame($expected, $collection->toArray());
 
-        $newData = [
-            [
-                'id' => 256,
-                'name' => 'Someone else',
-                'age' => 33,
+        /**
+         * string keys overwrite if exist
+         */
+        $new = [
+            'Davos Seaworth' => [
+                'id' => 99,
+                'name' => 'Infant Davos Seaworth',
+                'age' => 3,
             ],
         ];
-        $collection1 = (new Collection($this->data()))->indexBy('id');
-        $collection2 = new Collection($newData);
-
-        $collection = $collection1->merge($collection2);
-        $tmp = \array_merge($this->data(), $newData);
-        $newData = [];
-        foreach ($tmp as $item) {
-            $newData[$item['id']] = $item;
+        $data = [];
+        foreach ($this->data() as $datum) {
+            $data[$datum['name']] = $datum;
         }
+        $expected = \array_merge($data, $new);
 
-        $this->assertSame(
-            $newData,
-            $collection->toArray()
-        );
+        $collection = (new Collection($this->data(), 'name'))->merge(new Collection($new));
+        $this->assertSame($expected, $collection->toArray());
 
-        $this->expectException(InvalidCollection::class);
-        $collection1->merge(new CollectionCollection([]));
+        $collection = (new Collection($this->data(), 'name'))->merge($new);
+        $this->assertSame($expected, $collection->toArray());
+
+        /**
+         * string keys append if not exist
+         */
+        $newData = [
+            'Sandor Clegane' => [
+                'name' => 'Sandor Clegane',
+            ],
+        ];
+        $indexedData = [];
+        foreach ($this->data() as $datum) {
+            $indexedData[$datum['name']] = $datum;
+        }
+        $expected = \array_merge($indexedData, $newData);
+
+        $collection = (new Collection($this->data(), 'name'))->merge(new Collection($newData));
+        $this->assertSame($expected, $collection->toArray());
+
+        $collection = (new Collection($this->data(), 'name'))->merge($newData);
+        $this->assertSame($expected, $collection->toArray());
     }
 
     public function testMin()
@@ -880,39 +909,6 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame($newData, $collection->toArray());
     }
 
-    public function testUnshift()
-    {
-        $add = [
-            'id' => 256,
-            'name' => 'Someone else',
-            'age' => 33,
-        ];
-        $collection = new Collection($this->data());
-        $collection->unshift($add);
-        $data = $this->data();
-        \array_unshift($data, $add);
-        $this->assertSame($data, $collection->toArray());
-
-        $add = [
-            'id' => 256,
-            'name' => 'Someone else',
-            'age' => 33,
-        ];
-        $collection = new Collection($this->data(), "id");
-        $collection->unshift($add);
-        $data = $this->data();
-        \array_unshift($data, $add);
-        $newData = [];
-        foreach ($data as $item) {
-            $newData[$item['id']] = $item;
-        }
-        $this->assertSame($newData, $collection->toArray());
-
-        $this->expectException(InvalidType::class);
-        $collection = new Collection($this->data(), "id");
-        $collection->unshift(false);
-    }
-
     public function testPull()
     {
         $collection = new Collection($this->data());
@@ -971,10 +967,49 @@ class CollectionMethodsTest extends TestCase
             $newData[$item['id']] = $item;
         }
         $this->assertSame($newData, $collection->toArray());
+    }
 
-        //$this->expectException(InvalidType::class);
-        //$collection = new Collection($this->data(), "id");
-        //$collection->push(false);
+    public function testPut()
+    {
+        /**
+         * put to existing key replaces value
+         */
+        $add = [
+            'id' => 256,
+            'name' => 'Melisandre',
+            'age' => 33,
+        ];
+        $collection = (new Collection($this->data()))
+            ->put($add, 0);
+        $data = $this->data();
+        $data[0] = $add;
+        $this->assertSame($data, $collection->toArray());
+
+        /**
+         * put to not yet existing key adds it
+         */
+        $add = [
+            'id' => 256,
+            'name' => 'Melisandre',
+            'age' => 33,
+        ];
+        $data = $this->data();
+        $data[99] = $add;
+        $collection = (new Collection($this->data()))->put($add, 99);
+        $this->assertSame($data, $collection->toArray());
+
+        /**
+         * providing null key works the same as push
+         */
+        $add = [
+            'id' => 256,
+            'name' => 'Melisandre',
+            'age' => 33,
+        ];
+        $data = $this->data();
+        \array_push($data, $add);
+        $collection = (new Collection($this->data()))->put($add, null);
+        $this->assertSame($data, $collection->toArray());
     }
 
     public function testRandom()
@@ -1339,6 +1374,39 @@ class CollectionMethodsTest extends TestCase
          */
         $collection = new Collection([0.1, 8.3]);
         $this->assertSame(8.4, $collection->sum());
+    }
+
+    public function testUnshift()
+    {
+        $add = [
+            'id' => 256,
+            'name' => 'Someone else',
+            'age' => 33,
+        ];
+        $collection = new Collection($this->data());
+        $collection->unshift($add);
+        $data = $this->data();
+        \array_unshift($data, $add);
+        $this->assertSame($data, $collection->toArray());
+
+        $add = [
+            'id' => 256,
+            'name' => 'Someone else',
+            'age' => 33,
+        ];
+        $collection = new Collection($this->data(), "id");
+        $collection->unshift($add);
+        $data = $this->data();
+        \array_unshift($data, $add);
+        $newData = [];
+        foreach ($data as $item) {
+            $newData[$item['id']] = $item;
+        }
+        $this->assertSame($newData, $collection->toArray());
+
+        $this->expectException(InvalidType::class);
+        $collection = new Collection($this->data(), "id");
+        $collection->unshift(false);
     }
 
     public function testValues()
