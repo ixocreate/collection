@@ -216,7 +216,7 @@ abstract class AbstractCollection implements CollectionInterface
         if ($this->strictUniqueKeys) {
             $key = $this->input->key();
             if (\in_array($key, $this->usedKeys, true)) {
-                throw new DuplicateKey('Key "'.$key.'" already in use. Either call values() or strictUniqueKeys(false) before you act on the collection.');
+                throw new DuplicateKey('Key "' . $key . '" already in use. Either call values() or strictUniqueKeys(false) before you act on the collection.');
             }
             $this->usedKeys[] = $key;
         }
