@@ -22,10 +22,6 @@ class CollectionMethodsTest extends TestCase
         return require '../misc/data.php';
     }
 
-    public function setUp()
-    {
-    }
-
     public function testAvg()
     {
         $collection = new Collection($this->data());

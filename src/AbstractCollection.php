@@ -132,31 +132,6 @@ abstract class AbstractCollection implements CollectionInterface
          * TODO: re-implement; used for extract()
          * A dot separated key path works as well. Supports the * wildcard. If a key contains \ or it must be escaped using \ character.
          */
-        //$keyPath = $selector;
-        //
-        //preg_match_all('/(.*[^\\\])(?:\.|$)/U', $keyPath, $matches);
-        //$pathParts = $matches[1];
-        //
-        //$extractor = function ($coll) use ($pathParts) {
-        //    foreach ($pathParts as $pathPart) {
-        //        $coll = flatten(filter($coll, 'isCollection'), 1);
-        //
-        //        if ($pathPart != '*') {
-        //            $pathPart = str_replace(['\.', '\*'], ['.', '*'], $pathPart);
-        //            $coll = values(only($coll, [$pathPart]));
-        //        }
-        //    }
-        //
-        //    return $coll;
-        //};
-        //
-        //$generator = function () use ($collection, $extractor) {
-        //    foreach ($collection as $value) {
-        //        foreach ($extractor([$value]) as $extracted) {
-        //            yield $extracted;
-        //        }
-        //    }
-        //};
 
         if ($selector === null) {
             return function ($value) {
@@ -767,86 +742,6 @@ abstract class AbstractCollection implements CollectionInterface
         });
     }
 
-    ///**
-    // * Returns a lazy collection of collections of $numberOfItems items each, at $step step
-    // * apart. If $step is not supplied, defaults to $numberOfItems, i.e. the partitions
-    // * do not overlap. If a $padding collection is supplied, use its elements as
-    // * necessary to complete last partition up to $numberOfItems items. In case there are
-    // * not enough padding elements, return a partition with less than $numberOfItems items.
-    // *
-    // * @param int $numberOfItems
-    // * @param int $step
-    // * @param iterable $padding
-    // * @return CollectionInterface
-    // */
-    //final public function partition($numberOfItems, $step = 0, iterable $padding = [])
-    //{
-    //    $generator = function () use ($collection, $numberOfItems, $step, $padding) {
-    //        $buffer = [];
-    //        $itemsToSkip = 0;
-    //        $tmpStep = $step ?: $numberOfItems;
-    //
-    //        foreach ($collection as $key => $value) {
-    //            if (\count($buffer) == $numberOfItems) {
-    //                yield dereferenceKeyValue($buffer);
-    //
-    //                $buffer = \array_slice($buffer, $tmpStep);
-    //                $itemsToSkip = $tmpStep - $numberOfItems;
-    //            }
-    //
-    //            if ($itemsToSkip <= 0) {
-    //                $buffer[] = [$key, $value];
-    //            } else {
-    //                $itemsToSkip--;
-    //            }
-    //        }
-    //
-    //        yield take(
-    //            concat(dereferenceKeyValue($buffer), $padding),
-    //            $numberOfItems
-    //        );
-    //    };
-    //
-    //    return (clone $this)->input($generator);
-    //
-    //    return partition($this->items(), $numberOfItems, $step, $padding);
-    //}
-
-    ///**
-    // * Creates a lazy collection of collections created by partitioning this collection every time $callable will
-    // * return different result.
-    // *
-    // * @param callable $callable
-    // * @return CollectionInterface
-    // */
-    //final public function partitionBy(callable $callable)
-    //{
-    //    $generator = function () use ($collection, $callable) {
-    //        $result = null;
-    //        $buffer = [];
-    //
-    //        foreach ($collection as $key => $value) {
-    //            $newResult = $callable($value, $key);
-    //
-    //            if (!empty($buffer) && $result != $newResult) {
-    //                yield dereferenceKeyValue($buffer);
-    //                $buffer = [];
-    //            }
-    //
-    //            $result = $newResult;
-    //            $buffer[] = [$key, $value];
-    //        }
-    //
-    //        if (!empty($buffer)) {
-    //            yield dereferenceKeyValue($buffer);
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generator);
-    //
-    //    return partitionBy($this->items(), $callable);
-    //}
-
     /**
      * @deprecated
      * @see AbstractCollection::extract()
@@ -859,17 +754,6 @@ abstract class AbstractCollection implements CollectionInterface
     }
 
     /**
-     * Removes and returns the last collection item
-     *
-     * @return mixed
-     */
-    final public function pop()
-    {
-        $pop = \array_pop($this->items);
-        return $pop;
-    }
-
-    /**
      * @deprecated
      * @see AbstractCollection::unshift()
      * @param $value
@@ -879,25 +763,6 @@ abstract class AbstractCollection implements CollectionInterface
     {
         return $this->unshift($value);
     }
-
-    //final public function pull(callable $callable): CollectionInterface
-    //{
-    //    $filteredItems = [];
-    //    $items = [];
-    //
-    //    foreach ($this->items as $key => $value) {
-    //        if ($callable($value, $key) === true) {
-    //            $filteredItems[] = $value;
-    //            continue;
-    //        }
-    //
-    //        $items[] = $value;
-    //    }
-    //
-    //    $this->items = $items;
-    //
-    //    return new static($filteredItems, $this->indexByKey);
-    //}
 
     final public function push($value, $key = null): CollectionInterface
     {
@@ -966,46 +831,6 @@ abstract class AbstractCollection implements CollectionInterface
         return is_iterable($carry) ? (clone $this)->input($carry) : $carry;
     }
 
-    ///**
-    // * Reduce the collection to single value. Walks from right to left.
-    // *
-    // * @param callable $callable must take 2 arguments, intermediate value and item from the iterator
-    // * @param mixed $startValue
-    // * @return mixed
-    // */
-    //final public function reduceRight(callable $callable, $startValue)
-    //{
-    //    return reduce(reverse($collection), $callable, $startValue);
-    //
-    //    $result = reduceRight($this->items(), $callable, $startValue);
-    //
-    //    return ($convertToCollection && isCollection($result)) ? new Collection($result) : $result;
-    //}
-
-    ///**
-    // * Returns a lazy collection of reduction steps.
-    // *
-    // * @param callable $callable
-    // * @param mixed $startValue
-    // * @return CollectionInterface
-    // */
-    //final public function reductions(callable $callable, $startValue)
-    //{
-    //    $generator = function () use ($collection, $callable, $startValue) {
-    //        $tmp = duplicate($startValue);
-    //
-    //        yield $tmp;
-    //        foreach ($collection as $key => $value) {
-    //            $tmp = $callable($tmp, $value, $key);
-    //            yield $tmp;
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generator);
-    //
-    //    return reductions($this->items(), $callable, $startValue);
-    //}
-
     final public function reject(callable $callable): CollectionInterface
     {
         $collection = $this->items();
@@ -1014,48 +839,6 @@ abstract class AbstractCollection implements CollectionInterface
             return !$callable($value, $key);
         });
     }
-
-    ///**
-    // * Returns a lazy collection with items from this collection but values that are found in keys of $replacementMap
-    // * are replaced by their values.
-    // *
-    // * @param iterable $replacementMap
-    // * @return CollectionInterface
-    // */
-    //final public function replace(iterable $replacementMap)
-    //{
-    //    $generator = function () use ($collection, $replacementMap) {
-    //        foreach ($collection as $key => $value) {
-    //            $newValue = getOrDefault($replacementMap, $value, $value);
-    //            yield $key => $newValue;
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generator);
-    //
-    //    return replace($this->items(), $replacementMap);
-    //}
-
-    ///**
-    // * Returns a lazy collection with items from $collection, but items with keys that are found in keys of
-    // * $replacementMap are replaced by their values.
-    // *
-    // * @param iterable $replacementMap
-    // * @return CollectionInterface
-    // */
-    //final public function replaceByKeys(iterable $replacementMap)
-    //{
-    //    $generator = function () use ($collection, $replacementMap) {
-    //        foreach ($collection as $key => $value) {
-    //            $newValue = getOrDefault($replacementMap, $key, $value);
-    //            yield $key => $newValue;
-    //        }
-    //    };
-    //
-    //    return (clone $this)->input($generator);
-    //
-    //    return replaceByKeys($this->items(), $replacementMap);
-    //}
 
     final public function reverse(): CollectionInterface
     {
@@ -1078,12 +861,6 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generator);
     }
 
-    //final public function shift()
-    //{
-    //    $shift = \array_shift($this->items);
-    //    return $shift;
-    //}
-
     final public function shuffle(): CollectionInterface
     {
         $collection = $this->items();
@@ -1097,26 +874,8 @@ abstract class AbstractCollection implements CollectionInterface
         return $this->dereferenceKeyValue($buffer);
     }
 
-    ///**
-    // * Shuffles the current collection items
-    // *
-    // * @return CollectionInterface
-    // */
-    //final public function shuffle(): CollectionInterface
-    //{
-    //    $items = $this->items;
-    //    \mt_srand();
-    //    \usort($items, function () {
-    //        return \mt_rand(-1, 1);
-    //    });
-    //
-    //    return new static($items, $this->indexByKey);
-    //}
-
     final public function slice(int $offset, int $length = null): CollectionInterface
     {
-        // return new static(\array_slice($this->items, $offset, $length), $this->indexByKey);
-
         $collection = $this->items();
 
         $generator = function () use ($collection, $offset, $length) {
@@ -1223,17 +982,6 @@ abstract class AbstractCollection implements CollectionInterface
 
     final public function takeNth($step, $offset = 0): CollectionInterface
     {
-        //$items = [];
-        //
-        //$position = 0;
-        //foreach ($this->items as $value) {
-        //    if ($position % $step === $offset) {
-        //        $items[] = $value;
-        //    }
-        //    $position++;
-        //}
-        //return new static($items, $this->indexByKey);
-
         $collection = $this->items();
 
         $generator = function () use ($collection, $step, $offset) {
@@ -1287,7 +1035,7 @@ abstract class AbstractCollection implements CollectionInterface
         if ($collection->some(function ($value) {
             return !($value instanceof CollectionInterface);
         })) {
-            throw new InvalidArgument('Can only transpose collections of collections');
+            throw new InvalidArgument('Can only transpose collections of CollectionInterface');
         }
 
         $collections = ($collection->map(function (CollectionInterface $collection) {
