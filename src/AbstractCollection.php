@@ -653,7 +653,6 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        //$valuesToCompare = toArray(values(concat(...$collections)));
         $valuesToCompare = (new Collection())->concat(...$collections)->values()->toArray();
 
         $generator = function () use ($collection, $valuesToCompare) {

@@ -670,23 +670,18 @@ class CollectionMethodsTest extends TestCase
 
     public function testIntersect()
     {
-        $collection1 = new Collection($this->data());
         $data = $this->data();
+        $collection1 = new Collection($data);
         $last = \array_pop($data);
         $collection2 = new Collection([$last]);
         $collection = $collection1->intersect($collection2);
+        $this->assertSame([$last], $collection->values()->toArray());
 
-        $this->assertSame([$last], $collection->toArray());
-
-        //$collection1 = (new Collection($this->data()))->indexBy('id');
-        //$data = $this->data();
-        //$last = \array_pop($data);
-        //$collection2 = new Collection([$last]);
-        //$collection = $collection1->intersect($collection2);
-        //$this->assertSame([$last['id'] => $last], $collection->toArray());
-        //
-        //$this->expectException(InvalidCollection::class);
-        //$collection1->intersect(new CollectionCollection([]));
+        $data = $this->data();
+        $collection1 = new Collection($data, 'id');
+        $collection2 = new Collection([$last]);
+        $collection = $collection1->intersect($collection2);
+        $this->assertSame([$last['id'] => $last], $collection->toArray());
     }
 
     public function testIsEmpty()
