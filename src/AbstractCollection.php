@@ -1149,28 +1149,35 @@ abstract class AbstractCollection implements CollectionInterface
      */
     final public function reverse(): CollectionInterface
     {
+        $collection = $this->items();
+
         $generator = function () use ($collection) {
             $array = [];
             foreach ($collection as $key => $value) {
                 $array[] = [$key, $value];
             }
 
-            return map(
-                indexBy(
-                    \array_reverse($array),
-                    function ($item) {
-                        return $item[0];
-                    }
-                ),
-                function ($item) {
+            return (new Collection(\array_reverse($array)))
+                ->indexBy(function ($item) {
+                    return $item[0];
+                })->map(function ($item) {
                     return $item[1];
-                }
-            );
+                });
+
+            //return map(
+            //    indexBy(
+            //        \array_reverse($array),
+            //        function ($item) {
+            //            return $item[0];
+            //        }
+            //    ),
+            //    function ($item) {
+            //        return $item[1];
+            //    }
+            //);
         };
 
         return (clone $this)->input($generator);
-
-        return reverse($this->items());
     }
 
     ///**

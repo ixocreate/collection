@@ -1062,17 +1062,18 @@ class CollectionMethodsTest extends TestCase
 
     public function testReverse()
     {
-        $collection = new Collection($this->data());
-        $this->assertSame(\array_reverse($this->data()), $collection->reverse()->toArray());
+        $data = $this->data();
+        $expected = \array_reverse($data, true);
 
-        $this->assertInstanceOf(Collection::class, $collection->reverse());
+        $collection = new Collection($data);
+        $this->assertSame($expected, $collection->reverse()->toArray());
 
-        $data = [];
-        foreach ($this->data() as $array) {
-            $data[$array['id']] = $array;
-        }
-        $collection = (new Collection($this->data()))->indexBy('id');
-        $this->assertSame(\array_reverse($data, true), $collection->reverse()->toArray());
+        //$data = [];
+        //foreach ($this->data() as $array) {
+        //    $data[$array['id']] = $array;
+        //}
+        //$collection = (new Collection($this->data()))->indexBy('id');
+        //$this->assertSame(\array_reverse($data, true), $collection->reverse()->toArray());
     }
 
     public function testShift()
