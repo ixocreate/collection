@@ -19,7 +19,7 @@ class CollectionMethodsTest extends TestCase
 {
     private function data()
     {
-        return require '../misc/data.php';
+        return require __DIR__ . '/../misc/data.php';
     }
 
     public function testAvg()
@@ -538,8 +538,7 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry) implements \ArrayAccess
-            {
+            $data[] = new class($entry) implements \ArrayAccess {
                 private $data;
 
                 public function __construct(array $data)
@@ -587,8 +586,7 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry)
-            {
+            $data[] = new class($entry) {
                 private $data;
 
                 public function __construct(array $data)
@@ -618,8 +616,7 @@ class CollectionMethodsTest extends TestCase
     {
         $data = [];
         foreach ($this->data() as $entry) {
-            $data[] = new class($entry)
-            {
+            $data[] = new class($entry) {
                 public $id;
 
                 public $name;

@@ -132,7 +132,6 @@ abstract class AbstractCollection implements CollectionInterface
          * TODO: re-implement; used for extract()
          * A dot separated key path works as well. Supports the * wildcard. If a key contains \ or it must be escaped using \ character.
          */
-
         if ($selector === null) {
             return function ($value) {
                 if (!\is_scalar($value)) {
@@ -828,7 +827,7 @@ abstract class AbstractCollection implements CollectionInterface
             $carry = $callable($carry, $value, $key);
         }
 
-        return is_iterable($carry) ? (clone $this)->input($carry) : $carry;
+        return \is_iterable($carry) ? (clone $this)->input($carry) : $carry;
     }
 
     final public function reject(callable $callable): CollectionInterface

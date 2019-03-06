@@ -17,7 +17,7 @@ class ArrayCollectionTest extends TestCase
 {
     private function data()
     {
-        return require '../misc/data.php';
+        return require __DIR__ . '/../misc/data.php';
     }
 
     public function testCollection()
