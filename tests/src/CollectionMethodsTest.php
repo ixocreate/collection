@@ -649,7 +649,7 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame($expected, $collection->toArray());
     }
 
-    public function testIndexByWithDuplicateKeys()
+    public function testIndexByWithDuplicateKey()
     {
         $collection = (new Collection([['id' => 1], ['id' => 1]]))
             ->strictUniqueKeys(false)
@@ -666,7 +666,7 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame(2, $collection->count());
 
         /**
-         * indexBy with $strict = true (which is default) results in a DuplicateKeys Exception
+         * indexBy with $strict = true (which is default) results in a DuplicateKey exception
          */
         $this->expectException(DuplicateKey::class);
         (new Collection([['id' => 1], ['id' => 1]]))
@@ -842,48 +842,6 @@ class CollectionMethodsTest extends TestCase
 
         $collection = (new Collection());
         $this->assertNull($collection->min());
-    }
-
-    public function testNth()
-    {
-        $collection = new Collection($this->data());
-        $collection = $collection->nth(2);
-
-        $items = [];
-        for ($i = 0; $i < \count($this->data()); $i++) {
-            if ($i % 2 !== 0) {
-                continue;
-            }
-            $items[] = $this->data()[$i];
-        }
-
-        $this->assertSame($items, $collection->toArray());
-
-        $collection = new Collection($this->data());
-        $collection = $collection->nth(3, 1);
-
-        $items = [];
-        for ($i = 0; $i < \count($this->data()); $i++) {
-            if ($i % 3 !== 1) {
-                continue;
-            }
-            $items[] = $this->data()[$i];
-        }
-
-        $this->assertSame($items, $collection->toArray());
-
-        $collection = (new Collection($this->data()))->indexBy('id');
-        $collection = $collection->nth(4, 1);
-
-        $items = [];
-        for ($i = 0; $i < \count($this->data()); $i++) {
-            if ($i % 4 !== 1) {
-                continue;
-            }
-            $items[$this->data()[$i]['id']] = $this->data()[$i];
-        }
-
-        $this->assertSame($items, $collection->toArray());
     }
 
     public function testPop()
@@ -1376,6 +1334,48 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame(8.4, $collection->sum());
     }
 
+    public function testTakeNth()
+    {
+        $collection = new Collection($this->data());
+        $collection = $collection->nth(2);
+
+        $items = [];
+        for ($i = 0; $i < \count($this->data()); $i++) {
+            if ($i % 2 !== 0) {
+                continue;
+            }
+            $items[] = $this->data()[$i];
+        }
+
+        $this->assertSame($items, $collection->toArray());
+
+        $collection = new Collection($this->data());
+        $collection = $collection->nth(3, 1);
+
+        $items = [];
+        for ($i = 0; $i < \count($this->data()); $i++) {
+            if ($i % 3 !== 1) {
+                continue;
+            }
+            $items[] = $this->data()[$i];
+        }
+
+        $this->assertSame($items, $collection->toArray());
+
+        $collection = (new Collection($this->data()))->indexBy('id');
+        $collection = $collection->nth(4, 1);
+
+        $items = [];
+        for ($i = 0; $i < \count($this->data()); $i++) {
+            if ($i % 4 !== 1) {
+                continue;
+            }
+            $items[$this->data()[$i]['id']] = $this->data()[$i];
+        }
+
+        $this->assertSame($items, $collection->toArray());
+    }
+
     public function testUnshift()
     {
         $add = [
@@ -1383,10 +1383,10 @@ class CollectionMethodsTest extends TestCase
             'name' => 'Someone else',
             'age' => 33,
         ];
-        $collection = new Collection($this->data());
-        $collection->unshift($add);
         $data = $this->data();
         \array_unshift($data, $add);
+
+        $collection = (new Collection($this->data()))->unshift($add)->values();
         $this->assertSame($data, $collection->toArray());
 
         $add = [

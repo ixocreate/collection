@@ -356,7 +356,7 @@ abstract class AbstractCollection implements CollectionInterface
         $count = 0;
 
         /**
-         * note that omitting $key in the loop will not trigger a DuplicateKeys exception when $strictUniqueKeys is set ...
+         * note that omitting $key in the loop will not trigger a DuplicateKey exception when $strictUniqueKeys is set ...
          *
          * foreach ($collection as $value) {
          *     $count++;
@@ -727,6 +727,9 @@ abstract class AbstractCollection implements CollectionInterface
         $collection = $this->items();
 
         foreach ($items as $key => $value) {
+            /**
+             * Safely override items by using put() in combination with string keys, new items will be pushed
+             */
             $collection = $collection->put($value, \is_string($key) ? $key : null);
         }
 
@@ -1406,8 +1409,8 @@ abstract class AbstractCollection implements CollectionInterface
                 yield $key => $value;
             }
 
-            foreach ($collection as $key => $value) {
-                yield $key => $value;
+            foreach ($collection as $k => $v) {
+                yield $k => $v;
             }
         };
 
