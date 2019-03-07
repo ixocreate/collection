@@ -88,7 +88,7 @@ abstract class AbstractCollection implements CollectionInterface
             $this->input = new \ArrayIterator($input);
         } elseif ($input instanceof \Generator) {
             $this->input = $input;
-        } elseif($input instanceof \Traversable) {
+        } elseif ($input instanceof \Traversable) {
             /**
              * If another Collection is passed as $input and assigned directly this would result in DuplicateKey errors.
              * Wrap it into an IteratorIterator to prevent this.
@@ -146,7 +146,7 @@ abstract class AbstractCollection implements CollectionInterface
                 try {
                     return $value->{$selector};
                 } catch (\Throwable $exception) {
-                    throw new InvalidReturnValue('Cannot key object by "' . $selector . '": ' . $exception->getMessage() );
+                    throw new InvalidReturnValue('Cannot key object by "' . $selector . '": ' . $exception->getMessage());
                 }
             }
         };
@@ -897,8 +897,6 @@ abstract class AbstractCollection implements CollectionInterface
                 return true;
             }
         }
-
-        var_dump('SUP');
 
         return false;
     }

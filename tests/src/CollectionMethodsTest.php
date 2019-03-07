@@ -59,7 +59,8 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame(2.2, (new Collection([1, 2, 2, 3]))->push(3)->avg());
     }
 
-    public function testAvgWithEmptyCollection() {
+    public function testAvgWithEmptyCollection()
+    {
         /**
          * no selector non-scalar values
          */
@@ -67,7 +68,8 @@ class CollectionMethodsTest extends TestCase
         (new Collection())->avg();
     }
 
-    public function testAvgWithNonScalarValuesAndNoSelector() {
+    public function testAvgWithNonScalarValuesAndNoSelector()
+    {
         /**
          * no selector non-scalar values
          */
