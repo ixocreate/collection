@@ -9,14 +9,11 @@ declare(strict_types=1);
 
 namespace Ixocreate\Collection;
 
-use ArrayIterator;
-use Iterator;
 use Ixocreate\Collection\Exception\DuplicateKey;
 use Ixocreate\Collection\Exception\EmptyCollection;
 use Ixocreate\Collection\Exception\InvalidArgument;
 use Ixocreate\Collection\Exception\InvalidReturnValue;
 use Ixocreate\Contract\Collection\CollectionInterface;
-use Traversable;
 
 /**
  * Class AbstractCollection
@@ -33,12 +30,12 @@ abstract class AbstractCollection implements CollectionInterface
     private $count;
 
     /**
-     * @var array|callable|Traversable
+     * @var array|callable|\Traversable
      */
     private $inputFactory;
 
     /**
-     * @var Iterator
+     * @var \Iterator
      */
     private $input;
 
@@ -53,7 +50,7 @@ abstract class AbstractCollection implements CollectionInterface
     private $usedKeys;
 
     /**
-     * @param callable|array|Traversable $items
+     * @param callable|array|\Traversable $items
      */
     public function __construct($items = [])
     {
@@ -69,7 +66,7 @@ abstract class AbstractCollection implements CollectionInterface
     }
 
     /**
-     * @param callable|array|Traversable $input
+     * @param callable|array|\Traversable $input
      * @return CollectionInterface
      */
     private function input($input = []): CollectionInterface
@@ -88,17 +85,14 @@ abstract class AbstractCollection implements CollectionInterface
         }
 
         if (\is_array($input)) {
-            $this->input = new ArrayIterator($input);
+            $this->input = new \ArrayIterator($input);
         } elseif ($input instanceof \Generator) {
             $this->input = $input;
-        } elseif ($input instanceof \Iterator) {
+        } elseif($input instanceof \Traversable) {
             /**
              * If another Collection is passed as $input and assigned directly this would result in DuplicateKey errors.
-             * TODO: find out why exactly
              * Wrap it into an IteratorIterator to prevent this.
              */
-            $this->input = new \IteratorIterator($input);
-        } elseif ($input instanceof \Traversable) {
             $this->input = new \IteratorIterator($input);
         } else {
             throw $this->inputFactory ? new InvalidReturnValue() : new InvalidArgument();
@@ -152,10 +146,9 @@ abstract class AbstractCollection implements CollectionInterface
                 try {
                     return $value->{$selector};
                 } catch (\Throwable $exception) {
-                    //
+                    throw new InvalidReturnValue('Cannot key object by "' . $selector . '": ' . $exception->getMessage() );
                 }
             }
-            return null;
         };
     }
 
@@ -443,7 +436,7 @@ abstract class AbstractCollection implements CollectionInterface
         return (clone $this)->input($generator);
     }
 
-    final public function filter(callable $callable): CollectionInterface
+    final public function filter(callable $callable = null): CollectionInterface
     {
         if ($callable === null) {
             $callable = function ($value, $key) {
@@ -493,7 +486,7 @@ abstract class AbstractCollection implements CollectionInterface
             $childLevelsToFlatten = $depth > 0 ? $depth - 1 : $depth;
 
             foreach ($collection as $key => $value) {
-                if ($flattenNextLevel && (\is_array($value) || $value instanceof Traversable)) {
+                if ($flattenNextLevel && (\is_array($value) || $value instanceof \Traversable)) {
                     $value = (clone $this)->input($value);
                     foreach ($value->flatten($childLevelsToFlatten) as $childKey => $childValue) {
                         yield $childKey => $childValue;
@@ -905,6 +898,8 @@ abstract class AbstractCollection implements CollectionInterface
             }
         }
 
+        var_dump('SUP');
+
         return false;
     }
 
@@ -938,9 +933,10 @@ abstract class AbstractCollection implements CollectionInterface
     final public function sortBy($selector): CollectionInterface
     {
         $collection = $this->items();
+        $selector = $this->selector($selector);
 
-        return $collection->sort(function ($value1, $value2, $key1, $key2) {
-            return $key1 > $key2;
+        return $collection->sort(function ($value1, $value2) use ($selector) {
+            return $selector($value1) > $selector($value2);
         });
     }
 
@@ -1016,25 +1012,19 @@ abstract class AbstractCollection implements CollectionInterface
 
     final public function transform(callable $transformer): CollectionInterface
     {
-        $items = $this->items();
+        $collection = $this->items();
 
-        $transformed = $transformer($items instanceof CollectionInterface ? $items : (clone $this)->input($items));
-
-        if (!($transformed instanceof CollectionInterface)) {
-            throw new InvalidReturnValue();
-        }
-
-        return $transformed;
+        return $transformer($collection);
     }
 
     final public function transpose(): CollectionInterface
     {
         $collection = $this->items();
 
-        if ($collection->some(function ($value) {
+        if ($collection->count() < 2 || $collection->some(function ($value) {
             return !($value instanceof CollectionInterface);
         })) {
-            throw new InvalidArgument('Can only transpose collections of CollectionInterface');
+            throw new InvalidArgument('Can only transpose collections of at least two CollectionInterface items');
         }
 
         $collections = ($collection->map(function (CollectionInterface $collection) {

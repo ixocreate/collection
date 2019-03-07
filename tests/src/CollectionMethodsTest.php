@@ -11,6 +11,8 @@ namespace IxocreateTest\Collection;
 
 use Ixocreate\Collection\Collection;
 use Ixocreate\Collection\Exception\DuplicateKey;
+use Ixocreate\Collection\Exception\EmptyCollection;
+use Ixocreate\Collection\Exception\InvalidArgument;
 use Ixocreate\Collection\Exception\InvalidReturnValue;
 use Ixocreate\Contract\Collection\CollectionInterface;
 use PHPUnit\Framework\TestCase;
@@ -55,12 +57,22 @@ class CollectionMethodsTest extends TestCase
          */
         $this->assertSame(2, (new Collection([1, 2, 2, 3]))->avg());
         $this->assertSame(2.2, (new Collection([1, 2, 2, 3]))->push(3)->avg());
+    }
 
+    public function testAvgWithEmptyCollection() {
+        /**
+         * no selector non-scalar values
+         */
+        $this->expectException(EmptyCollection::class);
+        (new Collection())->avg();
+    }
+
+    public function testAvgWithNonScalarValuesAndNoSelector() {
         /**
          * no selector non-scalar values
          */
         $this->expectException(InvalidReturnValue::class);
-        $this->assertSame(3, $collection->avg());
+        (new Collection($this->data()))->avg();
     }
 
     public function testChunk()
@@ -308,6 +320,9 @@ class CollectionMethodsTest extends TestCase
             ],
             $collection->values()->toArray()
         );
+
+        $collection = new Collection([null, true, false, 1, 2, 0, 99, '1', '0', '-1', 'false']);
+        $this->assertSame([true, 1, 2, 99, '1', '-1', 'false'], $collection->filter()->values()->toArray());
     }
 
     public function testFind()
@@ -924,6 +939,19 @@ class CollectionMethodsTest extends TestCase
             $newData[$item['id']] = $item;
         }
         $this->assertSame($newData, $collection->toArray());
+
+        /**
+         * push to not yet existing key
+         */
+        $add = [
+            'id' => 256,
+            'name' => 'Melisandre',
+            'age' => 33,
+        ];
+        $data = $this->data();
+        $data[99] = $add;
+        $collection = (new Collection($this->data()))->push($add, 99);
+        $this->assertSame($data, $collection->toArray());
     }
 
     public function testPut()
@@ -1238,6 +1266,23 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame($newData, $collection->toArray());
     }
 
+    public function testSortBy()
+    {
+        $collection = new Collection($this->data());
+        $sortBySelector = $collection->sortBy('age');
+        $sortByCallable = $collection->sort(function ($item1, $item2) {
+            return $item1['age'] - $item2['age'];
+        });
+        /**
+         * preserving keys
+         */
+        $this->assertSame($sortBySelector->toArray(), $sortByCallable->toArray());
+        /**
+         * reindex
+         */
+        $this->assertSame($sortBySelector->values()->toArray(), $sortByCallable->values()->toArray());
+    }
+
     public function testSplit()
     {
         $chunkedCollection = (new Collection($this->data()))
@@ -1350,46 +1395,60 @@ class CollectionMethodsTest extends TestCase
         $this->assertSame(8.4, $collection->sum());
     }
 
+    public function testTake()
+    {
+        $data = $this->data();
+        $expected = [];
+        for ($i = 0; $i < 2; $i++) {
+            $expected[] = $data[$i];
+        }
+
+        $collection = new Collection($this->data());
+        $collection = $collection->take(2);
+
+        $this->assertSame($expected, $collection->toArray());
+    }
+
     public function testTakeNth()
     {
         $collection = new Collection($this->data());
-        $collection = $collection->nth(2);
+        $collection = $collection->takeNth(2);
 
-        $items = [];
+        $expected = [];
         for ($i = 0; $i < \count($this->data()); $i++) {
             if ($i % 2 !== 0) {
                 continue;
             }
-            $items[] = $this->data()[$i];
+            $expected[] = $this->data()[$i];
         }
 
-        $this->assertSame($items, $collection->values()->toArray());
+        $this->assertSame($expected, $collection->values()->toArray());
 
         $collection = new Collection($this->data());
         $collection = $collection->takeNth(3, 1);
 
-        $items = [];
+        $expected = [];
         for ($i = 0; $i < \count($this->data()); $i++) {
             if ($i % 3 !== 1) {
                 continue;
             }
-            $items[] = $this->data()[$i];
+            $expected[] = $this->data()[$i];
         }
 
-        $this->assertSame($items, $collection->values()->toArray());
+        $this->assertSame($expected, $collection->values()->toArray());
 
         $collection = (new Collection($this->data()))->indexBy('id');
         $collection = $collection->takeNth(4, 1);
 
-        $items = [];
+        $expected = [];
         for ($i = 0; $i < \count($this->data()); $i++) {
             if ($i % 4 !== 1) {
                 continue;
             }
-            $items[$this->data()[$i]['id']] = $this->data()[$i];
+            $expected[$this->data()[$i]['id']] = $this->data()[$i];
         }
 
-        $this->assertSame($items, $collection->toArray());
+        $this->assertSame($expected, $collection->toArray());
     }
 
     /**
@@ -1475,6 +1534,30 @@ class CollectionMethodsTest extends TestCase
         ];
 
         $this->assertEquals($expected, $result);
+    }
+
+    public function testTransposeWithEmptyCollection()
+    {
+        $this->expectException(InvalidArgument::class);
+        (new Collection())
+            ->transpose()
+            ->toArray();
+    }
+
+    public function testTransposeWithNotEnoughItems()
+    {
+        $this->expectException(InvalidArgument::class);
+        (new Collection([new Collection()]))
+            ->transpose()
+            ->toArray();
+    }
+
+    public function testTransposeWithNonCollection()
+    {
+        $this->expectException(InvalidArgument::class);
+        (new Collection([new Collection(), []]))
+            ->transpose()
+            ->toArray();
     }
 
     public function testUnshift()

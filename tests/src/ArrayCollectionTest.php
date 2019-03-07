@@ -31,6 +31,18 @@ class ArrayCollectionTest extends TestCase
         $this->assertSame($data, $collection->toArray());
     }
 
+    public function testIndexBy()
+    {
+        $data = $this->data();
+
+        $expected = [];
+        foreach ($data as $datum) {
+            $expected[$datum['name']] = $datum;
+        }
+
+        $this->assertSame($expected, (new ArrayCollection($data, 'name'))->toArray());
+    }
+
     public function testInvalidTypeException()
     {
         $this->expectException(InvalidType::class);

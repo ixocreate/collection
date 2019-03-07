@@ -11,6 +11,8 @@ namespace IxocreateTest\Collection;
 
 use Ixocreate\Collection\Collection;
 use Ixocreate\Collection\Exception\DuplicateKey;
+use Ixocreate\Collection\Exception\InvalidArgument;
+use Ixocreate\Collection\Exception\InvalidReturnValue;
 use PHPUnit\Framework\TestCase;
 
 class CollectionTest extends TestCase
@@ -30,6 +32,16 @@ class CollectionTest extends TestCase
          * This makes sure it's properly wrapped internally.
          */
         $this->assertSame($collection->toArray(), $collection2->toArray());
+    }
+
+    public function testDeprecatedMethods()
+    {
+        $collection = new Collection($this->data());
+
+        $this->assertSame($collection->extract('name')->toArray(), $collection->parts('name')->toArray());
+        $this->assertSame($collection->takeNth(2)->toArray(), $collection->nth(2)->toArray());
+        $this->assertSame($collection->toArray(), $collection->all());
+        $this->assertSame($collection->unshift('name')->values()->toArray(), $collection->prepend('name')->values()->toArray());
     }
 
     public function testDuplicateKeyCheckRunsOnForeachWithKey()
@@ -105,6 +117,18 @@ class CollectionTest extends TestCase
         $this->assertSame($expected, $collection->toArray());
         $this->assertSame(2, $collection->count());
         $this->assertSame($expected, $collection->toArray());
+    }
+
+    public function testInvalidInput()
+    {
+        $this->expectException(InvalidArgument::class);
+        new Collection(false);
+    }
+
+    public function testSelectorWithInvalidObjectProperty()
+    {
+        $this->expectException(InvalidReturnValue::class);
+        (new Collection([(object)['foo' => 'bar']], 'nope'))->keys()->toArray();
     }
 
     public function testIterator()
