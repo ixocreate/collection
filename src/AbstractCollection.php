@@ -199,6 +199,12 @@ abstract class AbstractCollection implements CollectionInterface
 
     final public function key()
     {
+        $key = $this->input->key();
+
+        if (!is_scalar($key)) {
+            $key = (string) $key;
+        }
+
         /**
          * Strict indexBy requires keys to be unique - make sure this is the case while keys are being iterated
          * Note that this check will not be run when iterating over the collection with foreach ($collection as $value)
@@ -207,14 +213,14 @@ abstract class AbstractCollection implements CollectionInterface
          * values() itself would have to ignore strict duplicate checks.
          */
         if ($this->strictUniqueKeys) {
-            $key = $this->input->key();
+
             if (\in_array($key, $this->usedKeys, true)) {
                 throw new DuplicateKey('Key "' . $key . '" already in use. Either call values() or strictUniqueKeys(false) before you act on the collection.');
             }
             $this->usedKeys[] = $key;
         }
 
-        return $this->input->key();
+        return $key;
     }
 
     final public function valid()
