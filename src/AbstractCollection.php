@@ -201,7 +201,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $key = $this->input->key();
 
-        if (!is_scalar($key)) {
+        if (!\is_scalar($key)) {
             $key = (string) $key;
         }
 
@@ -213,7 +213,6 @@ abstract class AbstractCollection implements CollectionInterface
          * values() itself would have to ignore strict duplicate checks.
          */
         if ($this->strictUniqueKeys) {
-
             if (\in_array($key, $this->usedKeys, true)) {
                 throw new DuplicateKey('Key "' . $key . '" already in use. Either call values() or strictUniqueKeys(false) before you act on the collection.');
             }
