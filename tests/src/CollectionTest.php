@@ -125,6 +125,23 @@ class CollectionTest extends TestCase
         new Collection(false);
     }
 
+    public function testNonScalarKeyIsCastToString()
+    {
+        $entity = new class() {
+            public function __toString()
+            {
+                return 'foo';
+            }
+        };
+
+        $data = [
+            'bar' => $entity,
+        ];
+
+        $collection = (new Collection($data))->flip();
+        $this->assertSame(['foo' => 'bar'], $collection->toArray());
+    }
+
     public function testSelectorWithInvalidObjectProperty()
     {
         $this->expectException(InvalidReturnValue::class);
