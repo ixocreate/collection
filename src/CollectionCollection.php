@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Ixocreate\Collection;
 
 use Ixocreate\Collection\Exception\InvalidType;
-use Ixocreate\Contract\Collection\CollectionInterface;
+use Ixocreate\Collection\CollectionInterface;
 
 final class CollectionCollection extends AbstractCollection
 {

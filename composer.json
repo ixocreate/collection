@@ -1,6 +1,6 @@
 {
     "name": "ixocreate/collection",
-    "description": "Collections for IXOCREATE",
+    "description": "IXOCREATE Collection Library",
     "license": "MIT",
     "type": "library",
     "authors": [
@@ -12,11 +12,10 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
-        "ext-json": "*",
-        "ixocreate/collection-contract": "dev-develop"
+        "ext-json": "*"
     },
     "require-dev": {
-        "ixocreate/coding-standard": "^1.0.1",
+        "ixocreate/coding-standard": "^1.0",
         "php-coveralls/php-coveralls": "^2.1",
         "phpunit/phpunit": "^7.0"
     },
@@ -27,8 +26,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "IxocreateMisc\\Collection\\": "tests/misc/",
-            "IxocreateTest\\Collection\\": "tests/src/"
+            "Ixocreate\\Misc\\Collection\\": "tests/misc/",
+            "Ixocreate\\Test\\Collection\\": "tests/src/"
         }
     },
     "scripts": {

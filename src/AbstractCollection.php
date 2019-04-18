@@ -13,7 +13,7 @@ use Ixocreate\Collection\Exception\DuplicateKey;
 use Ixocreate\Collection\Exception\EmptyCollection;
 use Ixocreate\Collection\Exception\InvalidArgument;
 use Ixocreate\Collection\Exception\InvalidReturnValue;
-use Ixocreate\Contract\Collection\CollectionInterface;
+use Ixocreate\Collection\CollectionInterface;
 
 /**
  * Class AbstractCollection

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace IxocreateTest\Collection;
+namespace Ixocreate\Test\Collection;
 
 use Ixocreate\Collection\Collection;
 use Ixocreate\Collection\Exception\DuplicateKey;
