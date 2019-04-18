@@ -16,7 +16,6 @@ use Ixocreate\Collection\Exception\InvalidReturnValue;
 
 /**
  * Class AbstractCollection
- *
  * Inspired by collection pipeline library https://github.com/DusanKasan/Knapsack and https://laravel.com/docs/master/collections
  *
  * @package Ixocreate\Collection
@@ -56,7 +55,6 @@ abstract class AbstractCollection implements CollectionInterface
         /**
          * The constructor is not final to allow for overrides in specialized collections (for setting defaults etc).
          * For this reason the input is passed to a dedicated setter which can be called after cloning.
-         *
          * ```
          * return (clone $this)->input($generator);
          * ```
@@ -172,7 +170,6 @@ abstract class AbstractCollection implements CollectionInterface
     /**
      * By expecting unique keys realizing the Collection by calling any method that causes iteration will
      * throw a DuplicateKey Exception if items share the same key.
-     *
      * Disabling strict behaviour will cause toArray() to only contain each last found value of a given key.
      * To get the expected amount of items you should call values() before.
      *
@@ -201,7 +198,7 @@ abstract class AbstractCollection implements CollectionInterface
         $key = $this->input->key();
 
         if (!\is_scalar($key)) {
-            $key = (string) $key;
+            $key = (string)$key;
         }
 
         /**
@@ -252,9 +249,9 @@ abstract class AbstractCollection implements CollectionInterface
     }
 
     /**
-     * @deprecated
-     * @see AbstractCollection::toArray()
      * @return array
+     * @see AbstractCollection::toArray()
+     * @deprecated
      */
     final public function all(): array
     {
@@ -328,11 +325,9 @@ abstract class AbstractCollection implements CollectionInterface
 
         /**
          * note that omitting $key in the loop will not trigger a DuplicateKey exception when $strictUniqueKeys is set ...
-         *
          * foreach ($collection as $value) {
          *     $count++;
          * }
-         *
          * ... the following will, as it will call the \Iterator::key() method where the actual uniqueness check happens
          */
         foreach ($collection as $key => $value) {
@@ -739,10 +734,10 @@ abstract class AbstractCollection implements CollectionInterface
     }
 
     /**
-     * @deprecated
-     * @see AbstractCollection::extract()
      * @param callable|string|int $selector
      * @return CollectionInterface
+     * @deprecated
+     * @see AbstractCollection::extract()
      */
     final public function parts($selector): CollectionInterface
     {
@@ -750,10 +745,10 @@ abstract class AbstractCollection implements CollectionInterface
     }
 
     /**
-     * @deprecated
-     * @see AbstractCollection::unshift()
      * @param $value
      * @return CollectionInterface
+     * @deprecated
+     * @see AbstractCollection::unshift()
      */
     final public function prepend($value)
     {
@@ -996,11 +991,11 @@ abstract class AbstractCollection implements CollectionInterface
     }
 
     /**
-     * @deprecated
-     * @see AbstractCollection::takeNth()
      * @param int $step
      * @param int $offset
      * @return CollectionInterface
+     * @see AbstractCollection::takeNth()
+     * @deprecated
      */
     final public function nth(int $step, $offset = 0): CollectionInterface
     {
