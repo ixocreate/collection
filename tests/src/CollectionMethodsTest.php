@@ -10,11 +10,11 @@ declare(strict_types=1);
 namespace Ixocreate\Test\Collection;
 
 use Ixocreate\Collection\Collection;
+use Ixocreate\Collection\CollectionInterface;
 use Ixocreate\Collection\Exception\DuplicateKey;
 use Ixocreate\Collection\Exception\EmptyCollection;
 use Ixocreate\Collection\Exception\InvalidArgument;
 use Ixocreate\Collection\Exception\InvalidReturnValue;
-use Ixocreate\Collection\CollectionInterface;
 use PHPUnit\Framework\TestCase;
 
 class CollectionMethodsTest extends TestCase
