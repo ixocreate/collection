@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace IxocreateTest\Collection;
+namespace Ixocreate\Test\Collection;
 
 use Ixocreate\Collection\Collection;
 use Ixocreate\Collection\Exception\DuplicateKey;
@@ -123,6 +123,23 @@ class CollectionTest extends TestCase
     {
         $this->expectException(InvalidArgument::class);
         new Collection(false);
+    }
+
+    public function testNonScalarKeyIsCastToString()
+    {
+        $entity = new class() {
+            public function __toString()
+            {
+                return 'foo';
+            }
+        };
+
+        $data = [
+            'bar' => $entity,
+        ];
+
+        $collection = (new Collection($data))->flip();
+        $this->assertSame(['foo' => 'bar'], $collection->toArray());
     }
 
     public function testSelectorWithInvalidObjectProperty()

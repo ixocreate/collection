@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace IxocreateTest\Collection\Scenarios;
+namespace Ixocreate\Test\Collection\Scenarios;
 
 use Ixocreate\Collection\Collection;
 use PHPUnit\Framework\TestCase;
