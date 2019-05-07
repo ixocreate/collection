@@ -208,11 +208,11 @@ abstract class AbstractCollection implements CollectionInterface
          * Moving this check anywhere else would require all internal functions to call values() beforehand and
          * values() itself would have to ignore strict duplicate checks.
          */
-        if ($this->strictUniqueKeys) {
-            if (\in_array($key, $this->usedKeys, true)) {
+        if ($this->strictUniqueKeys && $this->inputFactory && $this->input instanceof \Generator) {
+            if (isset($this->usedKeys[$key])) {
                 throw new DuplicateKey('Key "' . $key . '" already in use. Either call values() or strictUniqueKeys(false) before you act on the collection.');
             }
-            $this->usedKeys[] = $key;
+            $this->usedKeys[$key] = true;
         }
 
         return $key;
@@ -320,6 +320,13 @@ abstract class AbstractCollection implements CollectionInterface
         if ($this->count !== null) {
             return $this->count;
         }
+
+        //TODO Switch to is_countable when php version bump to 7.3
+        if ($this->input instanceof \Countable) {
+            $this->count = $this->input->count();
+            return $this->count;
+        }
+
         $collection = $this->items();
         $count = 0;
 
