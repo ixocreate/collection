@@ -1,7 +1,7 @@
 # IXOCREATE Collection Library
 
 [![Build Status](https://travis-ci.com/ixocreate/collection.svg?branch=master)](https://travis-ci.com/ixocreate/collection)
-[![Coverage Status](https://coveralls.io/repos/github/ixocreate/collection/badge.svg?branch=develop)](https://coveralls.io/github/ixocreate/collection?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/ixocreate/collection/badge.svg?branch=master)](https://coveralls.io/github/ixocreate/collection?branch=master)
 [![Packagist](https://img.shields.io/packagist/v/ixocreate/collection.svg)](https://packagist.org/packages/ixocreate/collection)
 [![PHP Version](https://img.shields.io/packagist/php-v/ixocreate/collection.svg)](https://packagist.org/packages/ixocreate/collection)
 [![License](https://img.shields.io/github/license/ixocreate/collection.svg)](LICENSE)
