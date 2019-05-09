@@ -532,7 +532,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        if (is_array($collection)) {
+        if (\is_array($collection)) {
             return $collection[$key] ?? $default;
         }
 
@@ -567,7 +567,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        if (is_array($collection) && isset($collection[$key])) {
+        if (\is_array($collection) && isset($collection[$key])) {
             return true;
         }
 
