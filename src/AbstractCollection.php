@@ -532,6 +532,10 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
+        if (is_array($collection)) {
+            return $collection[$key] ?? $default;
+        }
+
         foreach ($collection as $valueKey => $value) {
             if ($valueKey === $key) {
                 return $value;
@@ -562,6 +566,10 @@ abstract class AbstractCollection implements CollectionInterface
     final public function has($key): bool
     {
         $collection = $this->items();
+
+        if (is_array($collection) && isset($collection[$key])) {
+            return true;
+        }
 
         return $collection->keys()->contains($key);
     }
