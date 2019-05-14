@@ -532,8 +532,8 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        if (\is_array($collection)) {
-            return $collection[$key] ?? $default;
+        if ($this->input instanceof \ArrayIterator) {
+            return $this->input[$key] ?? $default;
         }
 
         foreach ($collection as $valueKey => $value) {
@@ -567,7 +567,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        if (\is_array($collection) && isset($collection[$key])) {
+        if ($this->input instanceof \ArrayIterator && isset($collection[$key])) {
             return true;
         }
 
