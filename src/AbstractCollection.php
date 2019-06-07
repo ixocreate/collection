@@ -567,7 +567,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
-        if (\is_array($collection) && isset($collection[$key])) {
+        if ($this->input instanceof \ArrayIterator && \array_key_exists($key, $this->input->getArrayCopy())) {
             return true;
         }
 
