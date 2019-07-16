@@ -1,6 +1,13 @@
 # Release Notes
 
-## [Unreleased](https://github.com/ixocreate/collection/compare/0.1.1...develop)
+## [Unreleased](https://github.com/ixocreate/collection/compare/0.1.2...develop)
+
+## [v0.1.2 (2019-07-16)](https://github.com/ixocreate/collection/compare/0.1.1...0.1.2)
+### Fixed
+- uses collection as array
+
+### Changed
+- Improved handling of arrays in `get()` and `has()`
 
 ## [v0.1.1 (2019-05-07)](https://github.com/ixocreate/collection/compare/0.1.0...0.1.1)
 ### Changed

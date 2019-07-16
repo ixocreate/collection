@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/ixocreate
- * @copyright IXOCREATE GmbH
+ * @copyright IXOLIT GmbH
  * @license MIT License
  */
 
@@ -532,6 +532,10 @@ abstract class AbstractCollection implements CollectionInterface
     {
         $collection = $this->items();
 
+        if ($this->input instanceof \ArrayIterator) {
+            return $this->input[$key] ?? $default;
+        }
+
         foreach ($collection as $valueKey => $value) {
             if ($valueKey === $key) {
                 return $value;
@@ -562,6 +566,10 @@ abstract class AbstractCollection implements CollectionInterface
     final public function has($key): bool
     {
         $collection = $this->items();
+
+        if ($this->input instanceof \ArrayIterator && \array_key_exists($key, $this->input->getArrayCopy())) {
+            return true;
+        }
 
         return $collection->keys()->contains($key);
     }
