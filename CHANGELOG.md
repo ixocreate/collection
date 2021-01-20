@@ -1,6 +1,12 @@
 # Release Notes
 
-## [Unreleased](https://github.com/ixocreate/collection/compare/0.1.2...develop)
+## [Unreleased](https://github.com/ixocreate/collection/compare/0.2.0...develop)
+
+## [v0.2.0 (2021-01-20)](https://github.com/ixocreate/collection/compare/0.1.2...0.2.0)
+### Fixed
+- fix returning bool from comparison
+### Changed
+- required PHP Version
 
 ## [v0.1.2 (2019-07-16)](https://github.com/ixocreate/collection/compare/0.1.1...0.1.2)
 ### Fixed
