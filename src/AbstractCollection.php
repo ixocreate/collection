@@ -927,8 +927,8 @@ abstract class AbstractCollection implements CollectionInterface
             ->toArray();
 
         if ($callable === null) {
-            $callable = function ($value1, $value2) {
-                return $value1 > $value2;
+            $callable = function ($a, $b) {
+                return $a <=> $b;
             };
         }
 
@@ -948,7 +948,7 @@ abstract class AbstractCollection implements CollectionInterface
         $selector = $this->selector($selector);
 
         return $collection->sort(function ($value1, $value2) use ($selector) {
-            return $selector($value1) > $selector($value2);
+            return $selector($value1) <=> $selector($value2);
         });
     }
 
@@ -957,7 +957,7 @@ abstract class AbstractCollection implements CollectionInterface
         $collection = $this->items();
 
         return $collection->sort(function ($value1, $value2, $key1, $key2) {
-            return $key1 > $key2;
+            return $key1 <=> $key2;
         });
     }
 

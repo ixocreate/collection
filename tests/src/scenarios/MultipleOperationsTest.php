@@ -37,7 +37,7 @@ class MultipleOperationsTest extends TestCase
             ->flatten()
             ->values()
             ->sort(function ($a, $b) {
-                return $a > $b;
+                return $a <=> $b;
             })
             ->slice(2, 5)
             ->groupBy(function ($v) {
